@@ -1,0 +1,192 @@
+name: blockchain-dapp-template
+version: "1.0.0"
+description: Complete DeFi/Web3 dApp development template with smart contracts
+author: Grok-Workflow-Builder-v1
+tags: [blockchain, dapp, defi, smart-contract, web3]
+
+config:
+  max_steps: 14
+  timeout: 5400
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - blockchain-architect
+  - security-auditor
+  - frontend-developer
+  - devops-engineer
+  - defi-strategist
+
+steps:
+  - name: define-tokenomics
+    type: thought
+    description: Define tokenomics and utility
+    agent: defi-strategist
+    inputs:
+      token_purpose: "{{token_purpose}}"
+      supply: "{{total_supply}}"
+      distribution: "{{distribution_model}}"
+    outputs:
+      tokenomics_spec: tokenomics.json
+      utility_analysis: utility.json
+
+  - name: design-architecture
+    type: action
+    description: Design dApp architecture
+    agent: blockchain-architect
+    depends_on: [define-tokenomics]
+    inputs:
+      tokenomics: "{{steps.define-tokenomics.outputs.tokenomics_spec}}"
+      blockchain: "{{target_blockchain}}"  # ethereum, polygon, etc.
+    outputs:
+      architecture: architecture.md
+      contract_spec: spec.yaml
+      integration_points: integrations.json
+
+  - name: develop-smart-contracts
+    type: action
+    description: Develop smart contracts
+    agent: blockchain-architect
+    depends_on: [design-architecture]
+    inputs:
+      spec: "{{steps.design-architecture.outputs.contract_spec}}"
+      standards: "{{token_standards}}"  # ERC20, ERC721, etc.
+    outputs:
+      contracts: contracts/
+      interfaces: interfaces/
+      tests: contracts/test/
+
+  - name: security-audit-contracts
+    type: action
+    description: Conduct security audit on contracts
+    agent: security-auditor
+    depends_on: [develop-smart-contracts]
+    inputs:
+      contracts: "{{steps.develop-smart-contracts.outputs.contracts}}"
+      audit_level: full
+    outputs:
+      audit_report: audit.json
+      vulnerabilities: []
+      security_score: 9.0
+
+  - name: frontend-development
+    type: action
+    description: Develop dApp frontend
+    agent: frontend-developer
+    depends_on: [develop-smart-contracts]
+    inputs:
+      web3_provider: "{{web3_library}}"  # ethers, web3.js, wagmi
+      contract_abi: "{{steps.develop-smart-contracts.outputs.interfaces}}"
+    outputs:
+      frontend: frontend/
+      wallet_connect: wallet.ts
+      components: components/
+
+  - name: backend-services
+    type: action
+    description: Develop backend services if needed
+    agent: blockchain-architect
+    depends_on: [frontend-development]
+    inputs:
+      requirements: "{{backend_requirements}}"
+    outputs:
+      backend: backend/
+      indexer: indexer.ts
+      api: api.ts
+
+  - name: write-contract-tests
+    type: action
+    description: Write comprehensive contract tests
+    agent: security-auditor
+    depends_on: [security-audit-contracts]
+    inputs:
+      contracts: "{{steps.develop-smart-contracts.outputs.contracts}}"
+    outputs:
+      test_coverage: 95%
+      test_results: results.json
+      edge_cases: edge.json
+
+  - name: setup-deployment
+    type: action
+    description: Set up deployment pipeline
+    agent: devops-engineer
+    depends_on: [frontend-development, backend-services]
+    inputs:
+      network: "{{target_network}}"  # mainnet, testnet
+    outputs:
+      deploy_scripts: scripts/
+      hardhat_config: hardhat.config.js
+      verify_commands: commands.txt
+
+  - name: deploy-testnet
+    type: action
+    description: Deploy to testnet
+    agent: devops-engineer
+    depends_on: [setup-deployment]
+    inputs:
+      contracts: "{{steps.develop-smart-contracts.outputs.contracts}}"
+      config: "{{steps.setup-deployment.outputs.hardhat_config}}"
+    outputs:
+      testnet_addresses: addresses.json
+      deployment_logs: logs.txt
+
+  - name: integration-testing
+    type: action
+    description: Run integration tests on testnet
+    agent: security-auditor
+    depends_on: [deploy-testnet, frontend-development]
+    inputs:
+      frontend: "{{steps.frontend-development.outputs.frontend}}"
+      addresses: "{{steps.deploy-testnet.outputs.testnet_addresses}}"
+    outputs:
+      integration_results: integration.json
+      gas_usage: gas.json
+      issues: []
+
+  - name: mainnet-prep
+    type: reflection
+    description: Prepare for mainnet deployment
+    agent: blockchain-architect
+    depends_on: [integration-testing]
+    inputs:
+      results: "{{steps.integration-testing.outputs.integration_results}}"
+    outputs:
+      mainnet_checklist: checklist.json
+      risk_assessment: risk.json
+
+  - name: documentation
+    type: action
+    description: Create comprehensive documentation
+    agent: tech-writer
+    depends_on: [mainnet-prep]
+    inputs:
+      contracts: "{{steps.develop-smart-contracts.outputs.contracts}}"
+      frontend: "{{steps.frontend-development.outputs.frontend}}"
+    outputs:
+      whitepaper: WHITEPAPER.md
+      documentation: docs/
+      api_docs: API.md
+
+guardrails:
+  - security_audit_mandatory: true
+  - mainnet_only_after_testnet_success: true
+  - no_hardcoded_private_keys: true
+  - audit_score_above_8: true
+  - gas_optimization_required: true
+
+success_criteria:
+  - security_audit_passed: true
+  - testnet_deployment_successful: true
+  - integration_tests_passing: true
+  - documentation_complete: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_contract_logic
+    - use_standard_contracts
+    - delay_mainnet_deployment
+  escalation_conditions:
+  - security_audit_failed
+  - testnet_deployment_failed
+  - integration_tests_failing

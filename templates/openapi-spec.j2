@@ -1,0 +1,186 @@
+# OpenAPI Specification Template
+
+## Purpose
+Generate comprehensive OpenAPI specifications for REST APIs.
+
+## Template Variables
+- {{api_title}}: API name
+- {{api_version}}: API version
+- {{description}}: API description
+- {{base_path}}: Base URL path
+- {{servers}}: List of server URLs
+- {{tags}}: API tag categories
+- {{paths}}: API endpoints
+
+## Generated Output
+
+\`\`\`yaml
+openapi: 3.1.0
+info:
+  title: {{api_title}}
+  description: |
+    {{description}}
+    
+    ## Authentication
+    All endpoints require Bearer token authentication.
+    
+    ## Rate Limiting
+    - 1000 requests/minute for authenticated users
+    - 100 requests/minute for unauthenticated requests
+    
+    ## Error Handling
+    All errors follow RFC 7807 Problem Details format.
+  termsOfService: https://example.com/terms
+  contact:
+    name: API Support
+    email: support@example.com
+    url: https://example.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: {{api_version}}
+
+servers:
+{% for server in servers %}
+  - url: {{server.url}}
+    description: {{server.description}}
+{% endfor %}
+
+security:
+  - BearerAuth: []
+
+tags:
+{% for tag in tags %}
+  - name: {{tag.name}}
+    description: {{tag.description}}
+{% endfor %}
+
+paths:
+{% for path in paths %}
+  {{path.endpoint}}:
+    {{path.method}}:
+      tags:
+        - {{path.tag}}
+      summary: {{path.summary}}
+      description: {{path.description}}
+      operationId: {{path.operation_id}}
+      parameters:
+{% for param in path.parameters %}
+        - name: {{param.name}}
+          in: {{param.location}}
+          description: {{param.description}}
+          required: {{param.required}}
+          schema:
+            type: {{param.type}}
+{% if param.enum %}
+            enum:
+{% for value in param.enum %}
+              - {{value}}
+{% endfor %}
+{% endif %}
+{% endfor %}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+{% for field in path.request_fields %}
+                - {{field.name}}
+{% endfor %}
+              properties:
+{% for field in path.request_fields %}
+                {{field.name}}:
+                  type: {{field.type}}
+                  description: {{field.description}}
+{% if field.example %}
+                  example: {{field.example}}
+{% endif %}
+{% endfor %}
+      responses:
+{% for response in path.responses %}
+        '{{response.code}}':
+          description: {{response.description}}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/{{response.schema}}'
+{% endfor %}
+      callbacks:
+{% for callback in path.callbacks %}
+        {{callback.name}}:
+          '{{callback.event}}':
+            post:
+              requestBody:
+                $ref: '#/components/requestBodies/{{callback.request_body}}'
+              responses:
+                '200':
+                  description: Callback acknowledged
+{% endfor %}
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+{% for schema in schemas %}
+    {{schema.name}}:
+      type: object
+      required:
+{% for field in schema.required %}
+        - {{field}}
+{% endfor %}
+      properties:
+{% for field in schema.fields %}
+        {{field.name}}:
+          type: {{field.type}}
+          description: {{field.description}}
+{% if field.example %}
+          example: {{field.example}}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+  requestBodies:
+{% for body in request_bodies %}
+    {{body.name}}:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/{{body.schema}}'
+{% endfor %}
+
+  responses:
+{% for response in responses %}
+    {{response.name}}:
+      description: {{response.description}}
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/{{response.schema}}'
+{% endfor %}
+
+  parameters:
+{% for param in parameters %}
+    {{param.name}}:
+      name: {{param.name}}
+      in: {{param.location}}
+      description: {{param.description}}
+      required: {{param.required}}
+      schema:
+        type: {{param.type}}
+{% endfor %}
+
+  examples:
+{% for example in examples %}
+    {{example.name}}:
+      summary: {{example.summary}}
+      value:
+        {{example.value}}
+{% endfor %}
+\`\`\`

@@ -1,0 +1,103 @@
+name: tree-of-thought
+version: "1.0.0"
+description: Branching thought exploration with systematic evaluation and pruning
+author: Grok-Workflow-Builder-v1
+tags: [tree-of-thought, reasoning, branching, exploration, evaluation]
+
+pattern_type: reasoning_pattern
+can_be_nested: true
+max_branches: 8
+
+thought_structure:
+  - level: root
+    branches: 1
+    evaluation: none
+    
+  - level: 1
+    branches: 3
+    evaluation: viability
+    
+  - level: 2
+    branches: 2
+    evaluation: feasibility
+    
+  - level: 3
+    branches: 2
+    evaluation: optimality
+    
+  - level: synthesis
+    branches: 1
+    evaluation: final_selection
+
+branching_strategy:
+  - method: diverse_exploration
+    diversity_metric: semantic_similarity
+    min_distance: 0.3
+    
+  - pruning:
+      strategy: threshold_based
+      thresholds:
+        viability: 0.6
+        feasibility: 0.7
+        optimality: 0.8
+
+evaluation_criteria:
+  viability:
+    - completeness: 0.3
+    - coherence: 0.3
+    - relevance: 0.4
+    
+  feasibility:
+    - resources: 0.3
+    - timeline: 0.3
+    - risks: 0.4
+    
+  optimality:
+    - efficiency: 0.3
+    - quality: 0.4
+    - sustainability: 0.3
+
+synthesis_strategy:
+  - method: weighted_aggregation
+    weights: [quality, confidence, completeness]
+  - output: ranked_options_with_rationale
+
+configurable_parameters:
+  max_depth:
+    type: integer
+    default: 4
+    min: 2
+    max: 6
+    
+  branch_factor:
+    type: integer
+    default: 3
+    min: 2
+    max: 5
+    
+  pruning_threshold:
+    type: float
+    default: 0.5
+    min: 0.3
+    max: 0.8
+
+example_usage:
+  problem: "Design a scalable web application architecture"
+  tree:
+    level_1:
+      - branch: "microservices"
+        viability_score: 0.85
+      - branch: "monolith"
+        viability_score: 0.7
+      - branch: "serverless"
+        viability_score: 0.8
+    level_2:
+      microservices:
+        - branch: "kubernetes-orchestrated"
+          feasibility: 0.9
+        - branch: "container-based"
+          feasibility: 0.85
+    synthesis:
+      winner: "kubernetes-orchestrated microservices"
+      confidence: 0.88
+      rationale: "Best balance of scalability, maintainability, and team velocity"

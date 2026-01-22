@@ -1,0 +1,125 @@
+name: defi-yield-optimizer
+version: "1.0.0"
+description: Optimize DeFi yield farming strategies across multiple protocols with risk management
+author: Grok-Workflow-Builder-v1
+tags: [defi, yield, optimization, finance, risk-management]
+
+config:
+  max_steps: 10
+  timeout: 1800
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - defi-strategist
+  - research-oracle
+  - security-auditor
+  - math-expert
+
+steps:
+  - name: research-protocols
+    type: action
+    description: Research and analyze current DeFi protocols and yields
+    agent: research-oracle
+    inputs:
+      query: "best DeFi yield farming opportunities 2024 TVL APY"
+      filters: {time_range: last_7_days, sources: [defi, news]}
+    outputs:
+      protocol_list: protocols.json
+      market_data: market.json
+
+  - name: analyze-opportunities
+    type: thought
+    description: Analyze yield opportunities with risk-adjusted returns
+    agent: defi-strategist
+    depends_on: [research-protocols]
+    inputs:
+      protocols: "{{steps.research-protocols.outputs.protocol_list}}"
+      investment_amount: "{{user_investment_amount}}"
+      risk_tolerance: "{{user_risk_tolerance}}"
+    outputs:
+      opportunities: opportunities.json
+      risk_scores: risk.json
+
+  - name: security-assessment
+    type: action
+    description: Assess smart contract security of top protocols
+    agent: security-auditor
+    depends_on: [analyze-opportunities]
+    inputs:
+      protocols: "{{steps.analyze-opportunities.outputs.opportunities}}"
+    outputs:
+      security_reports: security/
+      audit_scores: security_scores.json
+
+  - name: calculate-impermanent-loss
+    type: action
+    description: Calculate impermanent loss scenarios for LP positions
+    agent: math-expert
+    depends_on: [analyze-opportunities]
+    inputs:
+      pairs: "{{steps.analyze-opportunities.outputs.lp_pairs}}"
+      scenarios: ["stable", "volatile", "crash"]
+    outputs:
+      il_analysis: impermanent_loss.json
+
+  - name: optimize-allocation
+    type: reflection
+    description: Create optimized portfolio allocation
+    agent: defi-strategist
+    depends_on: [security-assessment, calculate-impermanent-loss]
+    inputs:
+      opportunities: "{{steps.analyze-opportunities.outputs.opportunities}}"
+      security_scores: "{{steps.security-assessment.outputs.audit_scores}}"
+      il_data: "{{steps.calculate-impermanent-loss.outputs.il_analysis}}"
+    outputs:
+      allocation: allocation.json
+      expected_apy: 0.15
+
+  - name: generate-strategy
+    type: action
+    description: Generate detailed execution strategy
+    agent: defi-strategist
+    depends_on: [optimize-allocation]
+    inputs:
+      allocation: "{{steps.optimize-allocation.outputs.allocation}}"
+    outputs:
+      strategy: strategy.md
+      steps: steps.json
+      gas_estimates: gas.json
+
+  - name: risk-disclosure
+    type: reflection
+    description: Generate comprehensive risk disclosure
+    agent: defi-strategist
+    depends_on: [generate-strategy]
+    inputs:
+      strategy: "{{steps.generate-strategy.outputs.strategy}}"
+      security: "{{steps.security-assessment.outputs.security_reports}}"
+    outputs:
+      disclosure: RISK_DISCLOSURE.md
+      warnings: warnings.json
+
+guardrails:
+  - never_recommend_unaudited_protocols: true
+  - require_security_audit_score_above: 7
+  - must_include_impermanent_loss_calculation: true
+  - require_testnet_trial_recommendation: true
+  - never_guarantee_returns: true
+
+success_criteria:
+  - security_audited_protocols: true
+  - risk_adjusted_returns_calculated: true
+  - impermanent_loss_analyzed: true
+  - comprehensive_disclosure_provided: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_strategy
+    - reduce_protocol_count
+    - increase_conservative_allocation
+  escalation_conditions:
+    - no_audited_protocols_available
+    - security_score_below_threshold
+    - risk_tolerance_mismatch

@@ -1,0 +1,195 @@
+name: mobile-app-development
+version: "1.0.0"
+description: Complete mobile app development from concept to app store submission
+author: Grok-Workflow-Builder-v1
+tags: [mobile, development, ios, android, deployment]
+
+config:
+  max_steps: 14
+  timeout: 5400
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - mobile-developer
+  - api-architect
+  - ui-ux-designer
+  - devops-engineer
+  - tech-writer
+
+steps:
+  - name: requirements-gathering
+    type: thought
+    description: Gather and analyze app requirements
+    agent: mobile-developer
+    inputs:
+      user_requirements: "{{app_requirements}}"
+      target_platforms: "{{platforms}}"  # ios/android/cross
+    outputs:
+      requirements_spec: requirements.json
+      feature_list: features.json
+      user_personas: personas.json
+
+  - name: architecture-design
+    type: action
+    description: Design app architecture
+    agent: api-architect
+    depends_on: [requirements-gathering]
+    inputs:
+      requirements: "{{steps.requirements-gathering.outputs.requirements_spec}}"
+      features: "{{steps.requirements-gathering.outputs.feature_list}}"
+    outputs:
+      architecture: architecture.md
+      api_spec: openapi.yaml
+      data_model: models.json
+
+  - name: ui-design
+    type: action
+    description: Create UI/UX design specifications
+    agent: ui-ux-designer
+    depends_on: [requirements-gathering]
+    inputs:
+      requirements: "{{steps.requirements-gathering.outputs.requirements_spec}}"
+      platform: "{{target_platforms}}"
+    outputs:
+      wireframes: wireframes/
+      design_system: design-system.json
+      ui_components: components.json
+
+  - name: backend-setup
+    type: action
+    description: Set up backend API
+    agent: api-architect
+    depends_on: [architecture-design]
+    inputs:
+      spec: "{{steps.architecture-design.outputs.api_spec}}"
+    outputs:
+      backend_code: backend/
+      database_schema: schema.sql
+      auth_service: auth.py
+
+  - name: frontend-development
+    type: action
+    description: Develop mobile app frontend
+    agent: mobile-developer
+    depends_on: [ui-design, backend-setup]
+    inputs:
+      design_system: "{{steps.ui-design.outputs.design_system}}"
+      api_spec: "{{steps.architecture-design.outputs.api_spec}}"
+      platform: "{{target_platforms}}"
+    outputs:
+      app_code: mobile/
+      screens: 15
+      components: 30
+
+  - name: feature-implementation
+    type: action
+    description: Implement core features
+    agent: mobile-developer
+    depends_on: [frontend-development]
+    inputs:
+      app: "{{steps.frontend-development.outputs.app_code}}"
+      features: "{{steps.requirements-gathering.outputs.feature_list}}"
+    outputs:
+      features_complete: true
+      implemented_features: features.json
+
+  - name: testing-setup
+    type: action
+    description: Set up comprehensive testing
+    agent: mobile-developer
+    depends_on: [feature-implementation]
+    inputs:
+      app: "{{steps.feature-implementation.outputs.app_code}}"
+    outputs:
+      unit_tests: tests/unit/
+      integration_tests: tests/integration/
+      e2e_tests: tests/e2e/
+      coverage: 85%
+
+  - name: performance-optimization
+    type: action
+    description: Optimize app performance
+    agent: mobile-developer
+    depends_on: [testing-setup]
+    inputs:
+      app: "{{steps.feature-implementation.outputs.app_code}}"
+    outputs:
+      optimized_app: mobile_optimized/
+      performance_report: performance.json
+      launch_time: "< 2s"
+
+  - name: security-hardening
+    type: action
+    description: Implement security measures
+    agent: security-auditor
+    depends_on: [performance-optimization]
+    inputs:
+      app: "{{steps.performance-optimization.outputs.optimized_app}}"
+      backend: "{{steps.backend-setup.outputs.backend_code}}"
+    outputs:
+      security_report: security.json
+      hardened_app: mobile_secure/
+      vulnerabilities_fixed: 12
+
+  - name: deployment-prep
+    type: action
+    description: Prepare for app store submission
+    agent: devops-engineer
+    depends_on: [security-hardening]
+    inputs:
+      app: "{{steps.security-hardening.outputs.hardened_app}}"
+      platform: "{{target_platforms}}"
+    outputs:
+      app_store_config: config/
+      signing_keys: instructions.txt
+      screenshots: assets/
+
+  - name: ci-cd-setup
+    type: action
+    description: Set up CI/CD pipeline
+    agent: devops-engineer
+    depends_on: [deployment-prep]
+    inputs:
+      config: "{{steps.deployment-prep.outputs.app_store_config}}"
+    outputs:
+      github_actions: .github/workflows/
+      fastlane: fastlane/
+      automated_tests: true
+
+  - name: documentation
+    type: action
+    description: Create documentation
+    agent: tech-writer
+    depends_on: [deployment-prep]
+    inputs:
+      app: "{{steps.security-hardening.outputs.hardened_app}}"
+      features: "{{steps.requirements-gathering.outputs.feature_list}}"
+    outputs:
+      user_guide: docs/user-guide.md
+      api_docs: docs/api.md
+      readme: README.md
+
+guardrails:
+  - platform_guidelines_compliance: true
+  - security_audit_required: true
+  - must_pass_store_review: true
+  - accessibility_compliance: true
+  - performance_benchmarks_met: true
+
+success_criteria:
+  - all_features_implemented: true
+  - tests_passing_85_coverage: true
+  - security_audit_passed: true
+  - ready_for_store_submission: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - reduce_features
+    - simplify_architecture
+    - native_cross_platform_tradeoff
+  escalation_conditions:
+    - platform_guidelines_violation
+    - security_issues_detected
+    - performance_not_acceptable

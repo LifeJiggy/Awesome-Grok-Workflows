@@ -1,0 +1,235 @@
+# System Design Prompt Template
+
+## Purpose
+Design scalable, maintainable system architectures for complex requirements.
+
+## Template Variables
+- {{system_name}}: Name of the system
+- {{functional_requirements}}: List of features the system must support
+- {{non_functional_requirements}}: Performance, availability, scalability needs
+- {{constraints}}: Tech stack, budget, timeline, regulations
+- {{users}}: Expected user base and usage patterns
+- {{data}}: Data types, volumes, access patterns
+
+## Prompt Structure
+
+```
+You are a principal architect with 20+ years of experience designing distributed systems.
+
+## System: {{system_name}}
+
+### Functional Requirements
+{{functional_requirements}}
+
+### Non-Functional Requirements
+{{non_functional_requirements}}
+
+### Constraints
+{{constraints}}
+
+### User Expectations
+{{users}}
+
+### Data Characteristics
+{{data}}
+
+## Design Requirements
+
+### Architecture Style
+Choose appropriate pattern:
+- Microservices (if complex, independent components)
+- Monolith (if simple, tight coupling acceptable)
+- Event-driven (if async, loosely coupled)
+- Serverless (if variable load, pay-per-use)
+
+### Key Components
+For each component, provide:
+1. Purpose and responsibility
+2. Technology choices with justification
+3. Scaling strategy
+4. Failure modes and mitigation
+
+### Data Architecture
+1. Database selection (SQL vs NoSQL)
+2. Data model overview
+3. Caching strategy
+4. Data consistency approach
+
+### API Design
+1. Major API endpoints
+2. Authentication/authorization
+3. Rate limiting strategy
+4. Versioning approach
+
+### Infrastructure
+1. Cloud provider recommendation
+2. Deployment strategy
+3. Monitoring and alerting
+4. Disaster recovery plan
+
+### Trade-offs
+Explicitly document:
+1. Performance vs cost
+2. Consistency vs availability
+3. Simplicity vs flexibility
+4. Build vs buy decisions
+
+## Output Format
+Use this structure:
+1. **Executive Summary** - One-paragraph overview
+2. **Architecture Diagram** - Mermaid or ASCII
+3. **Component Details** - Each component with specs
+4. **Data Flow** - Key workflows
+5. **Trade-offs** - Explicit decisions
+6. **Risks and Mitigations** - What could go wrong
+7. **Implementation Phases** - Staged rollout
+
+## Example Output Structure
+\`\`\`
+# System Design: {{system_name}}
+
+## Executive Summary
+Brief overview of the system and key design decisions.
+
+## Architecture
+
+\`\`\`mermaid
+graph TD
+    A[Client] --> B[Load Balancer]
+    B --> C[API Gateway]
+    C --> D[Service A]
+    C --> E[Service B]
+    D --> F[(Database)]
+    E --> G[(Cache)]
+\`\`\`
+
+## Components
+
+### Component 1: [Name]
+- **Purpose:** What it does
+- **Tech:** Why this choice
+- **Scale:** How it scales
+- **Failure:** What happens when it fails
+
+### Component 2: [Name]
+...
+
+## Data Architecture
+### Database Selection: PostgreSQL
+Justification: ACID compliance, complex queries
+
+### Caching: Redis
+Strategy: Cache-aside, 1-hour TTL
+
+## API Design
+\`\`\`
+GET /resources/{id}
+POST /resources
+\`\`\`
+
+## Trade-offs
+1. **Performance vs Cost:** Chose smaller instances with auto-scaling
+2. **Consistency vs Availability:** Eventual consistency for non-critical data
+
+## Risks
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| DB overload | High | Read replicas, caching |
+
+## Implementation
+Phase 1: MVP with monolith
+Phase 2: Split into services
+Phase 3: Advanced features
+\`\`\`
+
+## Validation
+- [ ] Meets all functional requirements
+- [ ] Addresses non-functional requirements
+- [ ] Within constraints
+- [ ] Scalable to projected users
+- [ ] Cost estimate provided
+- [ ] Failure scenarios considered
+```
+
+## Usage Example
+```
+You are a principal architect.
+
+## System: Real-time Chat Application
+
+### Functional Requirements
+1. 1:1 messaging with offline delivery
+2. Group chats up to 100 participants
+3. Message search
+4. Read receipts
+5. Media sharing (images, videos)
+
+### Non-Functional Requirements
+- 99.9% availability
+- < 100ms message delivery
+- Support 1M concurrent users
+- End-to-end encryption
+
+### Constraints
+- 6-month timeline
+- Team of 8 engineers
+- AWS ecosystem
+- Budget: $50K/month
+
+### Users
+- Mobile-first (70% mobile)
+- Global user base
+- Peak usage: evenings
+
+### Data
+- 10M messages/day
+- Growing 20% monthly
+- Media: 1TB/day
+```
+
+## Generated Output Example
+```markdown
+# System Design: Real-Time Chat Application
+
+## Executive Summary
+Design a scalable, secure chat platform supporting 1M concurrent users with sub-100ms message delivery. Using WebSocket for real-time, Redis for presence, PostgreSQL for persistence, and E2E encryption for privacy.
+
+## Architecture
+
+```mermaid
+graph TD
+    Client --> LB[Load Balancer]
+    LB --> API[API Gateway]
+    API --> Auth[Auth Service]
+    API --> Chat[Chat Service]
+    API --> User[User Service]
+    API --> Search[Search Service]
+    Chat --> WS[WebSocket Service]
+    WS --> RedisPub[Redis Pub/Sub]
+    Chat --> Postgres[(PostgreSQL)]
+    Chat --> S3[(S3 - Media)]
+    Search --> Elasticsearch
+```
+
+## Components
+
+### API Gateway (Kong)
+- **Purpose:** Entry point, rate limiting, routing
+- **Tech:** Kong on Kubernetes
+- **Scale:** 10 pods, auto-scale to 50
+- **Failure:** 503 with retry-after
+
+### WebSocket Service
+- **Purpose:** Persistent connections for real-time
+- **Tech:** Node.js with Socket.io
+- **Scale:** Shard by user ID (100 shards)
+- **Failure:** Reconnect with exponential backoff
+
+### Chat Service
+- **Purpose:** Message CRUD, routing, delivery
+- **Tech:** Go for performance
+- **Scale:** 20 pods, stateless
+- **Failure:** Message queue retry
+
+...
+```

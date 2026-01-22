@@ -1,0 +1,182 @@
+name: infrastructure-as-code-template
+version: "1.0.0"
+description: Complete infrastructure as code setup with multi-cloud support
+author: Grok-Workflow-Builder-v1
+tags: [infrastructure, terraform, cloud, devops, iac]
+
+config:
+  max_steps: 12
+  timeout: 3600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - devops-engineer
+  - linux-sysadmin
+  - security-auditor
+  - cloud-architect
+
+steps:
+  - name: requirements-analysis
+    type: thought
+    description: Analyze infrastructure requirements
+    agent: devops-engineer
+    inputs:
+      workload_type: "{{workload_type}}"  # web_app, data_processing, etc.
+      scale_requirements: "{{scale}}"
+      compliance_requirements: "{{compliance}}"
+    outputs:
+      requirements: requirements.json
+      resource_specs: resources.json
+
+  - name: select-cloud-strategy
+    type: thought
+    description: Select cloud provider(s)
+    agent: cloud-architect
+    depends_on: [requirements-analysis]
+    inputs:
+      requirements: "{{steps.requirements-analysis.outputs.requirements}}"
+      budget: "{{budget}}"
+      expertise: "{{team_expertise}}"
+    outputs:
+      cloud_strategy: multi/single/hybrid
+      providers: [aws, gcp, azure]
+      cost_estimate: estimate.json
+
+  - name: design-architecture
+    type: action
+    description: Design infrastructure architecture
+    agent: cloud-architect
+    depends_on: [select-cloud-strategy]
+    inputs:
+      strategy: "{{steps.select-cloud-strategy.outputs.cloud_strategy}}"
+      resources: "{{steps.requirements-analysis.outputs.resource_specs}}"
+    outputs:
+      architecture_diagram: architecture.png
+      network_design: network.yaml
+      security_groups: security.yaml
+
+  - name: terraform-setup
+    type: action
+    description: Set up Terraform configuration
+    agent: devops-engineer
+    depends_on: [design-architecture]
+    inputs:
+      architecture: "{{steps.design-architecture.outputs.architecture_diagram}}"
+      providers: "{{steps.select-cloud-strategy.outputs.providers}}"
+    outputs:
+      main_tf: main.tf
+      variables_tf: variables.tf
+      outputs_tf: outputs.tf
+      modules: modules/
+
+  - name: security-hardening
+    type: action
+    description: Implement security hardening
+    agent: security-auditor
+    depends_on: [terraform-setup]
+    inputs:
+      terraform: "{{steps.terraform-setup.outputs.main_tf}}"
+      compliance: "{{steps.requirements-analysis.outputs.compliance_requirements}}"
+    outputs:
+      security_tf: security.tf
+      policies: policies/
+      audit_config: audit.yaml
+
+  - name: ci-cd-pipeline
+    type: action
+    description: Set up CI/CD for infrastructure
+    agent: devops-engineer
+    depends_on: [terraform-setup]
+    inputs:
+      terraform: "{{steps.terraform-setup.outputs.main_tf}}"
+    outputs:
+      github_actions: .github/workflows/terraform-ci.yaml
+      azure_pipelines: azure-pipelines.yml
+
+  - name: state-management
+    type: action
+    description: Configure Terraform state
+    agent: devops-engineer
+    depends_on: [terraform-setup]
+    inputs:
+      terraform: "{{steps.terraform-setup.outputs.main_tf}}"
+      backend: "{{state_backend}}"  # s3, gcs, azure
+    outputs:
+      backend_config: backend.tf
+      state_locking: locking.json
+
+  - name: monitoring-setup
+    type: action
+    description: Set up monitoring and alerting
+    agent: linux-sysadmin
+    depends_on: [terraform-setup]
+    inputs:
+      architecture: "{{steps.design-architecture.outputs.architecture_diagram}}"
+    outputs:
+      prometheus: prometheus/
+      grafana: grafana/
+      alerts: alerts/
+      dashboards: dashboards/
+
+  - name: testing-infra
+    type: action
+    description: Set up infrastructure testing
+    agent: validation-engineer
+    depends_on: [terraform-setup, monitoring-setup]
+    inputs:
+      terraform: "{{steps.terraform-setup.outputs.main_tf}}"
+    outputs:
+      terratest: tests/
+      policy_tests: policy/
+      validation_scripts: validate.sh
+
+  - name: documentation
+    type: action
+    description: Generate infrastructure documentation
+    agent: tech-writer
+    depends_on: [security-hardening, monitoring-setup]
+    inputs:
+      terraform: "{{steps.terraform-setup.outputs.main_tf}}"
+      security: "{{steps.security-hardening.outputs.security_tf}}"
+    outputs:
+      runbook: RUNBOOK.md
+      architecture_doc: ARCHITECTURE.md
+      security_doc: SECURITY.md
+
+  - name: deployment-dr
+    type: reflection
+    description: Set up disaster recovery
+    agent: cloud-architect
+    depends_on: [monitoring-setup]
+    inputs:
+      architecture: "{{steps.design-architecture.outputs.architecture_diagram}}"
+      rto_rpo: "{{recovery_requirements}}"
+    outputs:
+      dr_plan: DR_PLAN.md
+      backup_config: backup.tf
+      failover_scripts: scripts/
+
+guardrails:
+  - state_locking_required: true
+  - secrets_encrypted: true
+  - backup_strategy_required: true
+  - monitoring_mandatory: true
+  - security_compliance_verified: true
+
+success_criteria:
+  - terraform_validated: true
+  - tests_passing: true
+  - security_audit_passed: true
+  - documentation_complete: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - use_managed_services
+    - simplify_architecture
+    - increase_timeout
+  escalation_conditions:
+    - state_lock_conflicts
+    - provider_limitations
+    - security_policy_violations

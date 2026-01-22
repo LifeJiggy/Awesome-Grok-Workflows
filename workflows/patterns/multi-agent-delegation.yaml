@@ -1,0 +1,101 @@
+name: multi-agent-delegation
+version: "1.0.0"
+description: Orchestrate multiple specialized agents with intelligent delegation
+author: Grok-Workflow-Builder-v1
+tags: [multi-agent, delegation, orchestration, coordination]
+
+pattern_type: orchestration_pattern
+can_be_nested: true
+max_agents: 10
+
+delegation_structure:
+  - role: orchestrator
+    type: coordinator
+    responsibilities:
+      - analyze_task
+      - delegate_work
+      - aggregate_results
+      - handle_failures
+    
+  - role: specialist_agents
+    type: workers
+    responsibilities:
+      - execute_specialized_tasks
+      - report_results
+      - request_help_if_needed
+
+coordination_mechanisms:
+  - parallel_execution: true
+  - sequential_dependencies: false
+  - result_aggregation: hierarchical
+  - conflict_resolution: priority_based
+
+agent_selection_criteria:
+  - capability_match: 0.4  # weight
+  - availability: 0.2
+  - performance_history: 0.2
+  - cost: 0.1
+  - latency: 0.1
+
+handoff_protocol:
+  - context_transfer: complete
+  - state_persistence: required
+  - acknowledgment_required: true
+  - timeout_seconds: 300
+
+error_handling:
+  - agent_failure:
+      strategy: retry_then_backup
+      max_retries: 2
+  - timeout:
+      strategy: escalate
+      fallback: simpler_approach
+  - conflict:
+      strategy: priority_vote
+      escalation: human
+
+quality_guards:
+  - no_agent_overlap: true
+  - complete_context_transfer: true
+  - result_consistency_check: true
+  - total_cost_budget: enforced
+
+configurable_parameters:
+  max_agents:
+    type: integer
+    default: 5
+    min: 2
+    max: 20
+    
+  parallel_limit:
+    type: integer
+    default: 3
+    min: 1
+    max: 10
+    
+  budget_cap:
+    type: float
+    default: 10.0
+    min: 1.0
+    max: 100.0
+
+example_usage:
+  task: "Analyze and improve this codebase"
+  agents:
+    - name: "security-auditor"
+      priority: 1
+      task: "security analysis"
+    - name: "code-review-team"
+      priority: 2
+      task: "code quality review"
+    - name: "efficient-code-patterns"
+      priority: 3
+      task: "optimization suggestions"
+  coordination:
+    parallel: [security-auditor, code-review-team]
+    sequential: [efficient-code-patterns]
+  result_aggregation:
+    security_report: from security-auditor
+    quality_report: from code-review-team
+    optimizations: from efficient-code-patterns
+    final_synthesis: from orchestrator

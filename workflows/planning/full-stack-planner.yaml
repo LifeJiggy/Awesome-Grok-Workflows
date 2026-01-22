@@ -1,0 +1,106 @@
+name: full-stack-planner
+version: 1.0.0
+description: End-to-end planner for full-stack development from idea to deployment
+author: Grok-Workflow-Builder-v1
+tags: [planning, full-stack, development, orchestration]
+
+# Workflow Configuration
+config:
+  max_steps: 12
+  timeout: 1800  # 30 minutes
+  retry_attempts: 2
+  parallel_execution: true
+  
+# Required Skills from Awesome-Grok-Skills
+required_skills:
+  - research-oracle
+  - architecture-planner
+  - code-review-team
+  - efficient-code-patterns
+  - deployment-automation
+
+# Workflow Steps
+steps:
+  - name: analyze-requirements
+    type: thought
+    description: Analyze user requirements and break into technical components
+    agent: research-oracle
+    inputs:
+      user_idea: "{{user_input}}"
+    outputs:
+      requirements_spec: requirements.yaml
+      technical_components: components.json
+    
+  - name: design-architecture
+    type: action
+    description: Create system architecture and tech stack recommendations
+    agent: architecture-planner
+    depends_on: [analyze-requirements]
+    inputs:
+      requirements: "{{steps.analyze-requirements.outputs.requirements_spec}}"
+      components: "{{steps.analyze-requirements.outputs.technical_components}}"
+    outputs:
+      architecture_diagram: arch.mmd
+      tech_stack: stack.yaml
+    
+  - name: create-development-plan
+    type: reflection
+    description: Review architecture and create phased development plan
+    agent: code-review-team
+    depends_on: [design-architecture]
+    inputs:
+      architecture: "{{steps.design-architecture.outputs.architecture_diagram}}"
+      tech_stack: "{{steps.design-architecture.outputs.tech_stack}}"
+    outputs:
+      development_phases: phases.json
+      risk_assessment: risks.md
+    
+  - name: generate-code-patterns
+    type: action
+    description: Generate efficient code patterns for implementation
+    agent: efficient-code-patterns
+    depends_on: [create-development-plan]
+    inputs:
+      phases: "{{steps.create-development-plan.outputs.development_phases}}"
+      tech_stack: "{{steps.design-architecture.outputs.tech_stack}}"
+    outputs:
+      code_templates: templates/
+      best_practices: practices.md
+    
+  - name: setup-deployment-pipeline
+    type: action
+    description: Configure CI/CD and deployment automation
+    agent: deployment-automation
+    depends_on: [generate-code-patterns]
+    inputs:
+      architecture: "{{steps.design-architecture.outputs.architecture_diagram}}"
+      phases: "{{steps.create-development_plan.outputs.development_phases}}"
+    outputs:
+      pipeline_config: .github/workflows/
+      deployment_scripts: scripts/deploy/
+
+# Guardrails
+guardrails:
+  - must_validate_architecture: true
+  - require_security_review: true
+  - enforce_performance_thresholds: true
+  - must_include_testing_strategy: true
+
+# Success Criteria
+success_criteria:
+  - requirements_fully_specified: true
+  - architecture_approved: true
+  - development_plan_realistic: true
+  - deployment_pipeline_ready: true
+
+# Error Handling
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_architecture
+    - reduce_scope
+    - extend_timeline
+  escalation_conditions:
+    - security_vulnerabilities_detected
+    - architecture_impossible
+    - timeline_unrealistic

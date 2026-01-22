@@ -1,0 +1,108 @@
+name: react-loop
+version: 1.0.0
+description: Standard ReAct (Thought-Action-Observation) loop pattern for agent workflows
+author: Grok-Workflow-Builder-v1
+tags: [react, reasoning, agent-pattern, loops]
+
+pattern_type: composable_loop
+can_be_nested: true
+max_iterations: 10
+
+# ReAct Loop Template
+loop_structure:
+  - step: thought
+    type: reasoning
+    description: Analyze current state and decide next action
+    required_inputs: [current_state, goal, observations_history]
+    outputs: [thought_process, next_action, confidence_score]
+    
+  - step: action
+    type: execution
+    description: Execute the decided action
+    required_inputs: [thought_process, next_action, available_tools]
+    outputs: [action_result, tool_used, execution_metadata]
+    
+  - step: observation
+    type: analysis
+    description: Analyze action results and update state
+    required_inputs: [action_result, expected_outcome, current_state]
+    outputs: [observation_summary, state_update, new_information]
+
+# Termination Conditions
+termination_conditions:
+  success_criteria:
+    - goal_achieved: true
+    - confidence_score: ">= 0.9"
+    - no_new_information: 2  # consecutive loops
+    
+  failure_criteria:
+    - max_iterations_reached: true
+    - critical_error_occurred: true
+    - confidence_score: "< 0.3" for 3 consecutive loops
+    
+  safety_breaks:
+    - ethical_violation_detected: true
+    - resource_exhaustion: true
+    - endless_loop_detected: true
+
+# Quality Guards
+quality_guards:
+  thought_quality:
+    must_be_specific: true
+    must_reference_observations: true
+    must_estimate_confidence: true
+    
+  action_quality:
+    must_be_executable: true
+    must_have_clear_intent: true
+    must_include_error_handling: true
+    
+  observation_quality:
+    must_be_factual: true
+    must_measure_outcome: true
+    must_update_state_accordingly: true
+
+# Configuration Options
+configurable_parameters:
+  max_iterations:
+    type: integer
+    default: 10
+    min: 1
+    max: 50
+    description: Maximum number of ReAct cycles
+    
+  confidence_threshold:
+    type: float
+    default: 0.9
+    min: 0.5
+    max: 1.0
+    description: Confidence level for successful termination
+    
+  parallel_actions:
+    type: boolean
+    default: false
+    description: Allow parallel action execution when possible
+
+# Integration Points
+integration_requirements:
+  state_management: "persist_state across iterations"
+  tool_access: "read/write access to domain tools"
+  logging: "detailed logging of each ReAct step"
+  monitoring: "real-time progress tracking"
+
+# Example Implementation
+example_usage:
+  workflow_name: "research-and-summarize"
+  initial_state:
+    topic: "quantum computing applications"
+    knowledge_gap: "unknown"
+    confidence: 0.5
+    
+  first_iteration:
+    thought: "I need to search for recent quantum computing applications to understand current state of the art"
+    action: "Search web for 'quantum computing applications 2024'"
+    observation: "Found 15 relevant papers, 3 breakthrough applications identified"
+    state_update:
+      knowledge_gap: "partially_filled"
+      confidence: 0.7
+      new_findings: 15

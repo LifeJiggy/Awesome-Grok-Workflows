@@ -1,0 +1,101 @@
+name: Generate Release Notes
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+      draft:
+        description: 'Create as draft'
+        required: false
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Mark as prerelease'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  analyze-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Analyze changes
+        run: |
+          pip install gitpython
+
+          python scripts/analyze-changes.py \
+            --since-tag ${{ github.event.release.tag_name || 'last-release' }} \
+            --output change-analysis.json
+
+      - name: Detect new workflows
+        run: |
+          echo "New workflows added:"
+          cat new-workflows.txt || echo "None"
+
+      - name: Detect breaking changes
+        run: |
+          echo "Breaking changes:"
+          cat breaking-changes.txt || echo "None"
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: change-analysis
+          path: |
+            change-analysis.json
+            new-workflows.txt
+            breaking-changes.txt
+
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    needs: analyze-changes
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate release notes
+        run: |
+          python scripts/generate-release-notes.py \
+            --input change-analysis.json \
+            --output RELEASE_NOTES.md \
+            --version ${{ github.event.release.tag_name || github.event.inputs.version }}
+
+      - name: Display release notes
+        run: |
+          echo "=== RELEASE NOTES ==="
+          cat RELEASE_NOTES.md
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
+
+  create-github-release:
+    runs-on: ubuntu-latest
+    needs: generate-release-notes
+    steps:
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.release.tag_name || github.event.inputs.version }}
+          release_name: Release ${{ github.event.release.tag_name || github.event.inputs.version }}
+          body_path: RELEASE_NOTES.md
+          draft: ${{ github.event.inputs.draft || false }}
+          prerelease: ${{ github.event.inputs.prerelease || false }}

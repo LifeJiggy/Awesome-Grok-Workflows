@@ -1,0 +1,172 @@
+name: security-audit-workflow
+version: "1.0.0"
+description: Comprehensive security audit workflow from reconnaissance to remediation
+author: Grok-Workflow-Builder-v1
+tags: [security, audit, vulnerability, penetration, compliance]
+
+config:
+  max_steps: 12
+  timeout: 3600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - security-auditor
+  - research-oracle
+  - linux-sysadmin
+  - tech-writer
+
+steps:
+  - name: reconnaissance
+    type: action
+    description: Gather information about target
+    agent: research-oracle
+    inputs:
+      target: "{{audit_target}}"
+      scope: "{{audit_scope}}"
+    outputs:
+      attack_surface: attack_surface.json
+      technology_stack: stack.json
+      known_vulnerabilities: cves.json
+
+  - name: threat-modeling
+    type: thought
+    description: Create threat model
+    agent: security-auditor
+    depends_on: [reconnaissance]
+    inputs:
+      attack_surface: "{{steps.reconnaissance.outputs.attack_surface}}"
+      assets: "{{critical_assets}}"
+    outputs:
+      threat_model: threats.json
+      risk_matrix: matrix.json
+      prioritized_threats: []
+
+  - name: automated-scanning
+    type: action
+    description: Run automated security scans
+    agent: security-auditor
+    depends_on: [threat-modeling]
+    inputs:
+      target: "{{audit_target}}"
+      scan_types: [static, dynamic, dependency]
+    outputs:
+      scan_results: scans/
+      findings: automated_findings.json
+      cve_matches: cves.json
+
+  - name: manual-testing
+    type: action
+    description: Manual penetration testing
+    agent: security-auditor
+    depends_on: [automated-scanning]
+    inputs:
+      target: "{{audit_target}}"
+      scope: "{{audit_scope}}"
+      findings: "{{steps.automated-scanning.outputs.findings}}"
+    outputs:
+      manual_findings: manual.json
+      exploitation_proofs: pocs/
+      severity_assessments: severity.json
+
+  - name: configuration-review
+    type: action
+    description: Review system configurations
+    agent: linux-sysadmin
+    depends_on: [reconnaissance]
+    inputs:
+      config_files: "{{config_files}}"
+      baseline: "{{security_baseline}}"
+    outputs:
+      config_issues: config.json
+      hardening_suggestions: hardening.md
+
+  - name: consolidate-findings
+    type: reflection
+    description: Consolidate all security findings
+    agent: security-auditor
+    depends_on: [automated-scanning, manual-testing, configuration-review]
+    inputs:
+      automated: "{{steps.automated-scanning.outputs.findings}}"
+      manual: "{{steps.manual-testing.outputs.manual_findings}}"
+      config: "{{steps.configuration-review.outputs.config_issues}}"
+    outputs:
+      all_findings: findings.json
+      critical_count: 3
+      high_count: 8
+      medium_count: 15
+      low_count: 25
+
+  - name: risk-assessment
+    type: action
+    description: Assess risks and impact
+    agent: security-auditor
+    depends_on: [consolidate-findings]
+    inputs:
+      findings: "{{steps.consolidate-findings.outputs.all_findings}}"
+      business_context: "{{business_context}}"
+    outputs:
+      risk_assessment: risks.json
+      business_impact: impact.json
+      remediation_priorities: priorities.json
+
+  - name: create-remediation-plan
+    type: action
+    description: Create detailed remediation plan
+    agent: security-auditor
+    depends_on: [risk-assessment]
+    inputs:
+      priorities: "{{steps.risk-assessment.outputs.remediation_priorities}}"
+    outputs:
+      remediation_plan: remediation.md
+      quick_wins: quick_fixes.json
+      long_term_fixes: long_term.json
+
+  - name: compliance-check
+    type: action
+    description: Check compliance requirements
+    agent: security-auditor
+    depends_on: [consolidate-findings]
+    inputs:
+      findings: "{{steps.consolidate-findings.outputs.all_findings}}"
+      framework: "{{compliance_framework}}"  # SOC2, GDPR, etc.
+    outputs:
+      compliance_gaps: compliance.json
+      compliance_score: 75%
+
+  - name: generate-report
+    type: action
+    description: Generate comprehensive security report
+    agent: tech-writer
+    depends_on: [create-remediation-plan, compliance-check]
+    inputs:
+      remediation: "{{steps.create-remediation-plan.outputs.remediation_plan}}"
+      compliance: "{{steps.compliance-check.outputs.compliance_gaps}}"
+      findings: "{{steps.consolidate-findings.outputs.all_findings}}"
+    outputs:
+      report: SECURITY_AUDIT_REPORT.pdf
+      executive_summary: summary.md
+      technical_details: details.md
+
+guardrails:
+  - scope_adherence_strict: true
+  - responsible_disclosure: true
+  - evidence_preservation: true
+  - confidentiality_maintained: true
+  - no_production_impact: true
+
+success_criteria:
+  - all_scope_areas_covered: true
+  - critical_vulnerabilities_identified: true
+  - remediation_plan_actionable: true
+  - compliance_gaps_documented: true
+
+error_handling:
+  max_retries: 1
+  fallback_strategies:
+    - extend_scope_carefully
+    - prioritize_critical_findings
+  escalation_conditions:
+    - critical_vulnerability_found
+    - scope_expansion_requested
+    - unavailable_target

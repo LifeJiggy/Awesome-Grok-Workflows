@@ -1,0 +1,249 @@
+---
+version: "1.0.0"
+created: "2024-01-01"
+updated: "2024-01-01"
+author: "Grok-Workflow-Builder-v1"
+purpose: "Jinja template for generating GitHub Actions CI/CD workflows"
+---
+
+{% raw %}
+# GitHub Actions Workflow Template
+
+## Variables
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| workflow_name | string | Yes | Name of the workflow |
+| triggers | dict | Yes | When to trigger |
+| jobs | list | Yes | Jobs to run |
+| env | dict | No | Global environment |
+
+## Template Structure
+
+```jinja2
+name: {{ workflow_name }}
+
+on:
+{% for trigger in triggers %}
+  {{ trigger.type }}:
+{% for condition in trigger.conditions %}
+    {{ condition | toyaml(indent=4) }}
+{% endfor %}
+{% endfor %}
+
+env:
+{% for key, value in env.items() %}
+  {{ key }}: {{ value | tojson }}
+{% endfor %}
+
+jobs:
+{% for job in jobs %}
+  {{ job.name }}:
+    runs-on: {{ job.runs_on | default('ubuntu-latest') }}
+{% if job.container %}
+    container: {{ job.container }}
+{% endif %}
+{% if job.outputs %}
+    outputs:
+{% for output, value in job.outputs.items() %}
+      {{ output }}: ${{ '{{' }}{{ value }}{{ '}}' }}
+{% endfor %}
+{% endif %}
+
+{% if job.steps %}
+    steps:
+{% for step in job.steps %}
+      - name: {{ step.name }}
+        uses: {{ step.uses }}
+{% if step.with %}
+        with:
+{% for key, value in step.with.items() %}
+          {{ key }}: {{ value | tojson }}
+{% endfor %}
+{% endif %}
+{% if step.env %}
+        env:
+{% for key, value in step.env.items() %}
+          {{ key }}: {{ value | tojson }}
+{% endfor %}
+{% endif %}
+{% if step.run %}
+        run: |
+          {{ step.run | indent(12) }}
+{% endif %}
+{% if step.if %}
+        if: {{ step.if }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+```
+
+## Usage Example
+
+```jinja2
+{% set workflow = {
+  'name': 'CI Pipeline',
+  'triggers': [
+    {'type': 'push', 'conditions': ["branches: [main, develop]", "paths: ['**.py', '!*.md']"]},
+    {'type': 'pull_request', 'conditions': ["branches: [main]"]}
+  ],
+  'env': {'PYTHON_VERSION': '3.11', 'POETRY_VERSION': '1.5.0'},
+  'jobs': [
+    {
+      'name': 'test',
+      'runs_on': 'ubuntu-latest',
+      'steps': [
+        {'name': 'Checkout', 'uses': 'actions/checkout@v4'},
+        {'name': 'Setup Python', 'uses': 'actions/setup-python@v5', 'with': {'python-version': '3.11'}},
+        {'name': 'Install deps', 'run': 'pip install -e ".[test]"', 'if': 'runner.os == "Linux"'},
+        {'name': 'Run tests', 'uses': 'codecov/codecov-action@v3', 'if': 'success()'}
+      ]
+    }
+  ]
+} %}
+{{ workflow | to_github_actions }}
+```
+
+## Complete Example
+
+```yaml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['**.py', 'pyproject.toml']
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: '3.11'
+  POETRY_VERSION: '1.5.0'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Run tests
+        run: poetry run pytest
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: myapp:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+      - name: Deploy
+        run: |
+          echo "Deploying to production..."
+          # Deployment commands here
+```
+
+## Common Patterns
+
+### Conditional Steps
+```yaml
+steps:
+  - name: Deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    run: ./deploy.sh
+```
+
+### Matrix Builds
+```yaml
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pytest
+```
+
+### Caching
+```yaml
+steps:
+  - uses: actions/cache@v4
+    with:
+      path: ~/.cache/pip
+      key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      restore-keys: |
+        ${{ runner.os }}-pip-
+```
+
+### Concurrency
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+## Best Practices
+
+1. **Pin action versions** - Use `@v4` not `@main`
+2. **Use caching** - Speed up workflows
+3. **Fail fast** - Set `needs` dependencies
+4. **Security** - Use OIDC for cloud access
+5. **Notifications** - Set up status checks
+6. **Documentation** - Comment complex steps
+7. **Idempotency** - Make workflows re-runnable
+8. **Secrets** - Use encrypted secrets
+{% endraw %}

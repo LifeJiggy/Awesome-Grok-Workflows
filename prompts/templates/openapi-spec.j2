@@ -1,0 +1,317 @@
+---
+version: "1.0.0"
+created: "2024-01-01"
+updated: "2024-01-01"
+author: "Grok-Workflow-Builder-v1"
+purpose: "Jinja template for API specification generation"
+---
+
+{% raw %}
+# OpenAPI/Swagger Specification Template
+
+## Variables
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| api_title | string | Yes | API name |
+| api_version | string | Yes | API version |
+| description | string | No | API description |
+| servers | list | No | Server URLs |
+| endpoints | list | Yes | API endpoints |
+| components | dict | No | Reusable components |
+
+## Template Structure
+
+```jinja2
+openapi: 3.1.0
+info:
+  title: {{ api_title }}
+  version: {{ api_version }}
+  description: {{ description | default('API description') }}
+{% if servers %}
+servers:
+{% for server in servers %}
+  - url: {{ server.url }}
+    description: {{ server.description | default('Production') }}
+{% endfor %}
+{% endif %}
+paths:
+{% for endpoint in endpoints %}
+  {{ endpoint.path }}:
+{% for method in endpoint.methods %}
+    {{ method }}:
+      summary: {{ method | upper }} {{ endpoint.path }}
+      description: {{ endpoint.description }}
+{% if endpoint.tags %}
+      tags:
+{% for tag in endpoint.tags %}
+        - {{ tag }}
+{% endfor %}
+{% endif %}
+{% if endpoint.parameters %}
+      parameters:
+{% for param in endpoint.parameters %}
+        - name: {{ param.name }}
+          in: {{ param.in }}
+          required: {{ param.required | default(false) | lower }}
+          schema:
+            type: {{ param.type | default('string') }}
+          description: {{ param.description }}
+{% endfor %}
+{% endif %}
+{% if endpoint.requestBody %}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/{{ endpoint.requestBody }}'
+{% endif %}
+      responses:
+{% for response in endpoint.responses %}
+        {{ response.code }}:
+          description: {{ response.description }}
+{% if response.content %}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/{{ response.content }}'
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% if components %}
+components:
+  schemas:
+{% for schema_name, schema in components.schemas.items() %}
+    {{ schema_name }}:
+      type: object
+      properties:
+{% for prop_name, prop in schema.properties.items() %}
+        {{ prop_name }}:
+          type: {{ prop.type }}
+{% if prop.format %}
+          format: {{ prop.format }}
+{% endif %}
+{% if prop.description %}
+          description: {{ prop.description }}
+{% endif %}
+{% if prop.example %}
+          example: {{ prop.example | tojson }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+  securitySchemes:
+{% for scheme_name, scheme in components.securitySchemes.items() %}
+    {{ scheme_name }}:
+      type: {{ scheme.type }}
+{% if scheme.type == 'http' %}
+      scheme: {{ scheme.scheme }}
+{% endif %}
+{% if scheme.type == 'apiKey' %}
+      in: {{ scheme.in }}
+      name: {{ scheme.name }}
+{% endif %}
+{% endfor %}
+{% endif %}
+security:
+  - bearerAuth: []
+```
+
+## Usage Example
+
+```jinja2
+{% set api_spec = {
+  'api_title': 'User Management API',
+  'api_version': '1.0.0',
+  'description': 'API for managing users and authentication',
+  'servers': [
+    {'url': 'https://api.example.com/v1', 'description': 'Production'},
+    {'url': 'https://staging-api.example.com/v1', 'description': 'Staging'}
+  ],
+  'endpoints': [
+    {
+      'path': '/users',
+      'methods': [
+        {
+          'method': 'get',
+          'description': 'List all users',
+          'tags': ['Users'],
+          'parameters': [
+            {'name': 'page', 'in': 'query', 'type': 'integer', 'description': 'Page number'},
+            {'name': 'limit', 'in': 'query', 'type': 'integer', 'description': 'Items per page'}
+          ],
+          'responses': [
+            {'code': '200', 'description': 'Success', 'content': 'UserList'}
+          ]
+        },
+        {
+          'method': 'post',
+          'description': 'Create a new user',
+          'tags': ['Users'],
+          'requestBody': 'UserCreate',
+          'responses': [
+            {'code': '201', 'description': 'Created', 'content': 'User'},
+            {'code': '400', 'description': 'Validation error'}
+          ]
+        }
+      ]
+    }
+  ],
+  'components': {
+    'schemas': {
+      'User': {
+        'properties': {
+          'id': {'type': 'string', 'format': 'uuid', 'description': 'User ID'},
+          'email': {'type': 'string', 'format': 'email', 'description': 'Email address'},
+          'name': {'type': 'string', 'description': 'Full name'},
+          'created_at': {'type': 'string', 'format': 'date-time'}
+        }
+      },
+      'UserCreate': {
+        'properties': {
+          'email': {'type': 'string', 'format': 'email'},
+          'name': {'type': 'string'},
+          'password': {'type': 'string', 'format': 'password'}
+        }
+      },
+      'UserList': {
+        'properties': {
+          'data': {'type': 'array', 'items': {'$ref': '#/components/schemas/User'}},
+          'meta': {'type': 'object'}
+        }
+      }
+    },
+    'securitySchemes': {
+      'bearerAuth': {'type': 'http', 'scheme': 'bearer'}
+    }
+  }
+} %}
+{{ api_spec | to_openapi }}
+```
+
+## Generated Output
+
+```yaml
+openapi: 3.1.0
+info:
+  title: User Management API
+  version: 1.0.0
+  description: API for managing users and authentication
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://staging-api.example.com/v1
+    description: Staging
+
+paths:
+  /users:
+    get:
+      summary: GET /users
+      description: List all users
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Page number
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Items per page
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+    post:
+      summary: POST /users
+      description: Create a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Validation error
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        email:
+          type: string
+          format: email
+          description: Email address
+        name:
+          type: string
+          description: Full name
+        created_at:
+          type: string
+          format: date-time
+
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        password:
+          type: string
+          format: password
+
+    UserList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          type: object
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - bearerAuth: []
+```
+
+## Best Practices
+
+1. **Use semantic versioning** for API version
+2. **Document all parameters** with descriptions
+3. **Provide example responses** for each endpoint
+4. **Use proper HTTP status codes**
+5. **Group endpoints** with tags
+6. **Version your API** in the path
+7. **Include error response schemas**
+8. **Use components** for reuse
+{% endraw %}

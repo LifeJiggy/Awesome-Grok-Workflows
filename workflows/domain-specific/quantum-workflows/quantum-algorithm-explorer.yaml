@@ -1,0 +1,141 @@
+name: quantum-algorithm-explorer
+version: "1.0.0"
+description: Explore and implement quantum algorithms for specific problem domains
+author: Grok-Workflow-Builder-v1
+tags: [quantum, computing, algorithms, qiskit, cirq]
+
+config:
+  max_steps: 12
+  timeout: 3600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - quantum-computing-expert
+  - physics-simulator
+  - math-expert
+  - research-oracle
+
+steps:
+  - name: problem-analysis
+    type: thought
+    description: Analyze problem for quantum advantage potential
+    agent: quantum-computing-expert
+    inputs:
+      problem: "{{user_problem}}"
+      constraints: "{{user_constraints}}"
+    outputs:
+      analysis: problem_analysis.json
+      quantum_advantage_potential: high/medium/low
+
+  - name: research-similar
+    type: action
+    description: Research existing quantum solutions
+    agent: research-oracle
+    inputs:
+      query: "quantum algorithm {{user_problem_type}} implementation"
+      filters: {sources: [academic,arxiv]}
+    outputs:
+      papers: papers.json
+      implementations: implementations.json
+
+  - name: select-algorithm
+    type: reflection
+    description: Select optimal quantum algorithm
+    agent: quantum-computing-expert
+    depends_on: [problem-analysis, research-similar]
+    inputs:
+      analysis: "{{steps.problem-analysis.outputs.analysis}}"
+      papers: "{{steps.research-similar.outputs.papers}}"
+    outputs:
+      algorithm: algorithm.json
+      alternatives: alternatives.json
+
+  - name: design-circuit
+    type: action
+    description: Design quantum circuit for selected algorithm
+    agent: quantum-computing-expert
+    depends_on: [select-algorithm]
+    inputs:
+      algorithm: "{{steps.select-algorithm.outputs.algorithm}}"
+      qubits: "{{user_qubits | default(16)}}"
+    outputs:
+      circuit: circuit.py
+      gate_decomposition: gates.json
+      depth_analysis: depth.json
+
+  - name: simulate-results
+    type: action
+    description: Run quantum circuit simulation
+    agent: physics-simulator
+    depends_on: [design-circuit]
+    inputs:
+      circuit: "{{steps.design-circuit.outputs.circuit}}"
+      shots: "{{user_shots | default(1024)}}"
+    outputs:
+      results: simulation_results.json
+      probability_distribution: probs.json
+
+  - name: compare-classical
+    type: action
+    description: Compare quantum results with classical baseline
+    agent: math-expert
+    depends_on: [simulate-results]
+    inputs:
+      quantum_results: "{{steps.simulate-results.outputs.results}}"
+      problem: "{{steps.problem-analysis.outputs.analysis}}"
+    outputs:
+      comparison: comparison.json
+      speedup_factor: 2.5x
+      quantum_advantage_verified: true/false
+
+  - name: optimize-circuit
+    type: reflection
+    description: Optimize circuit for NISQ-era hardware
+    agent: quantum-computing-expert
+    depends_on: [compare-classical]
+    inputs:
+      circuit: "{{steps.design-circuit.outputs.circuit}}"
+      comparison: "{{steps.compare-classical.outputs.comparison}}"
+    outputs:
+      optimized_circuit: circuit_optimized.py
+      gate_reduction: 30%
+      coherence_requirements: coherence.json
+
+  - name: document-solution
+    type: action
+    description: Document quantum solution with analysis
+    agent: tech-writer
+    depends_on: [optimize-circuit]
+    inputs:
+      problem: "{{steps.problem-analysis.outputs.analysis}}"
+      algorithm: "{{steps.select-algorithm.outputs.algorithm}}"
+      results: "{{steps.simulate-results.outputs.results}}"
+      optimization: "{{steps.optimize-circuit.outputs.optimized_circuit}}"
+    outputs:
+      documentation: QUANTUM_SOLUTION.md
+      code_files: src/
+
+guardrails:
+  - must_verify_quantum_advantage: true
+  - require_coherence_analysis: true
+  - must_compare_with_classical_baseline: true
+  - include_error_mitigation: true
+  - document_hardware_requirements: true
+
+success_criteria:
+  - quantum_advantage_demonstrated: true
+  - circuit_operational: true
+  - classical_comparison_complete: true
+  - optimization_implemented: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_algorithm
+    - increase_qubits
+    - hybrid_quantum_classical
+  escalation_conditions:
+    - no_quantum_advantage_found
+    - circuit_too_deep
+    - coherence_requirements_exceeded

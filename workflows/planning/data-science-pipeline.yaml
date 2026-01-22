@@ -1,0 +1,158 @@
+name: data-science-pipeline
+version: "1.0.0"
+description: End-to-end data science pipeline from data to deployment
+author: Grok-Workflow-Builder-v1
+tags: [data-science, ml, pipeline, deployment, analytics]
+
+config:
+  max_steps: 12
+  timeout: 3600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - machine-learning-engineer
+  - database-architect
+  - data-visualizer
+  - devops-engineer
+
+steps:
+  - name: data-understanding
+    type: thought
+    description: Understand and analyze the data
+    agent: machine-learning-engineer
+    inputs:
+      data_description: "{{data_description}}"
+      data_samples: "{{data_samples}}"
+    outputs:
+      data_profile: data_profile.json
+      quality_assessment: quality.json
+      initial_insights: insights.json
+
+  - name: data-preparation
+    type: action
+    description: Clean and prepare data for modeling
+    agent: machine-learning-engineer
+    depends_on: [data-understanding]
+    inputs:
+      data: "{{user_data}}"
+      cleaning_strategy: "{{steps.data-understanding.outputs.quality_assessment}}"
+    outputs:
+      cleaned_data: data_cleaned.csv
+      preprocessing_pipeline: pipeline.py
+      data_quality_report: quality_final.json
+
+  - name: feature-engineering
+    type: action
+    description: Create and select features
+    agent: machine-learning-engineer
+    depends_on: [data-preparation]
+    inputs:
+      data: "{{steps.data-preparation.outputs.cleaned_data}}"
+      target: "{{target_variable}}"
+    outputs:
+      features: features.json
+      feature_importance: importance.json
+      engineered_features: features.py
+
+  - name: model-selection
+    type: thought
+    description: Select and compare models
+    agent: machine-learning-engineer
+    depends_on: [feature-engineering]
+    inputs:
+      problem_type: "{{problem_type}}"  # classification/regression/clustering
+      features: "{{steps.feature-engineering.outputs.features}}"
+    outputs:
+      candidate_models: models.json
+      comparison: comparison.json
+      recommended_model: model_a
+
+  - name: model-training
+    type: action
+    description: Train and tune the selected model
+    agent: machine-learning-engineer
+    depends_on: [model-selection]
+    inputs:
+      model: "{{steps.model-selection.outputs.recommended_model}}"
+      data: "{{steps.feature-engineering.outputs.features}}"
+    outputs:
+      trained_model: model.pkl
+      training_metrics: metrics_train.json
+      hyperparams: hyperparams.json
+
+  - name: model-evaluation
+    type: reflection
+    description: Comprehensive model evaluation
+    agent: machine-learning-engineer
+    depends_on: [model-training]
+    inputs:
+      model: "{{steps.model-training.outputs.trained_model}}"
+      test_data: "{{holdout_data}}"
+    outputs:
+      evaluation_metrics: metrics.json
+      confusion_matrix: matrix.png
+      roc_curve: curve.png
+      final_score: 0.92
+
+  - name: create-visualizations
+    type: action
+    description: Create model and data visualizations
+    agent: data-visualizer
+    depends_on: [model-evaluation]
+    inputs:
+      metrics: "{{steps.model-evaluation.outputs.evaluation_metrics}}"
+      data: "{{steps.feature-engineering.outputs.features}}"
+    outputs:
+      dashboard: dashboard.html
+      charts: charts/
+      visualizations: vis.json
+
+  - name: prepare-deployment
+    type: action
+    description: Prepare model for deployment
+    agent: devops-engineer
+    depends_on: [model-training]
+    inputs:
+      model: "{{steps.model-training.outputs.trained_model}}"
+      api_requirements: "{{api_spec}}"
+    outputs:
+      api_code: api.py
+      dockerfile: Dockerfile
+      deployment_config: config.yaml
+
+  - name: deployment-pipeline
+    type: action
+    description: Set up CI/CD pipeline for model
+    agent: devops-engineer
+    depends_on: [prepare-deployment]
+    inputs:
+      config: "{{steps.prepare-deployment.outputs.deployment_config}}"
+    outputs:
+      pipeline: .github/workflows/ml-pipeline.yaml
+      monitoring: monitoring.yaml
+      tests: tests/
+
+guardrails:
+  - ensure_data_privacy: true
+  - validate_model_fairness: true
+  - require_test_set_evaluation: true
+  - document_all_steps: true
+  - plan_for_model_drift: true
+
+success_criteria:
+  - model_achieves_target_metric: true
+  - data_quality_sufficient: true
+  - deployment_pipeline_ready: true
+  - documentation_complete: true
+
+error_handling:
+  max_retries: 3
+  fallback_strategies:
+    - try_alternative_models
+    - increase_data
+    - simplify_approach
+  escalation_conditions:
+    - model_performance_too_low
+    - data_quality_issues
+    - deployment_failed

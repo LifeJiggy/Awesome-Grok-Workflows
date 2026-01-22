@@ -1,0 +1,105 @@
+name: physics-simulation-workflow
+version: 1.0.0
+description: Orchestrate physics simulation with mathematical rigor and validation
+author: Grok-Workflow-Builder-v1
+tags: [physics, simulation, mathematical-modeling, validation]
+
+config:
+  max_steps: 10
+  timeout: 2400  # 40 minutes for complex physics
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - physics-simulator
+  - mathematical-modeler
+  - validation-engineer
+  - research-oracle
+
+steps:
+  - name: define-physics-problem
+    type: thought
+    description: Define physics problem with mathematical precision
+    agent: physics-simulator
+    inputs:
+      problem_description: "{{user_problem}}"
+      domain: "{{physics_domain | default('classical_mechanics')}}"
+    outputs:
+      problem_specification: spec.yaml
+      governing_equations: equations.md
+      boundary_conditions: boundaries.json
+
+  - name: validate-mathematical-model
+    type: reflection
+    description: Ensure mathematical model follows conservation laws
+    agent: mathematical-modeler
+    depends_on: [define-physics-problem]
+    inputs:
+      equations: "{{steps.define-physics-problem.outputs.governing_equations}}"
+      boundaries: "{{steps.define-physics-problem.outputs.boundary_conditions}}"
+    outputs:
+      model_validation: validation.md
+      conservation_analysis: conservation.yaml
+      mathematical_rigor_score: score.json
+
+  - name: setup-simulation-parameters
+    type: action
+    description: Configure simulation parameters and numerical methods
+    agent: physics-simulator
+    depends_on: [validate-mathematical-model]
+    inputs:
+      spec: "{{steps.define-physics-problem.outputs.problem_specification}}"
+      validation: "{{steps.validate-mathematical-model.outputs.model_validation}}"
+    outputs:
+      simulation_config: config.yaml
+      numerical_methods: methods.json
+      computational_resources: resources.yaml
+
+  - name: run-simulation
+    type: action
+    description: Execute physics simulation with error monitoring
+    agent: physics-simulator
+    depends_on: [setup-simulation-parameters]
+    inputs:
+      config: "{{steps.setup-simulation-parameters.outputs.simulation_config}}"
+      methods: "{{steps.setup-simulation-parameters.outputs.numerical_methods}}"
+    outputs:
+      simulation_results: results/
+      convergence_data: convergence.json
+      error_analysis: errors.md
+
+  - name: validate-results
+    type: reflection
+    description: Validate simulation results against analytical solutions
+    agent: validation-engineer
+    depends_on: [run-simulation]
+    inputs:
+      results: "{{steps.run-simulation.outputs.simulation_results}}"
+      equations: "{{steps.define-physics-problem.outputs.governing_equations}}"
+    outputs:
+      validation_report: report.md
+      accuracy_metrics: accuracy.yaml
+      physical_consistency: consistency.json
+
+guardrails:
+  - must_conserve_energy: true
+  - must_conserve_momentum: true
+  - require_numerical_stability: true
+  - must_check_dimensional_consistency: true
+
+success_criteria:
+  - simulation_converged: true
+  - conservation_laws_satisfied: true
+  - results_physically_meaningful: true
+  - error_within_tolerance: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_numerical_methods
+    - increase_tolerance_levels
+    - reduce_simulation_complexity
+  escalation_conditions:
+    - conservation_laws_violated
+    - numerical_instability_detected
+    - simulation_diverges

@@ -1,0 +1,153 @@
+name: Test and Lint Workflows
+
+on:
+  push:
+    paths:
+      - '**.yaml'
+      - '**.yml'
+      - 'workflows/**'
+      - 'rules/**'
+      - 'scripts/validate-workflow.sh'
+    branches: [main, develop]
+  pull_request:
+    paths:
+      - '**.yaml'
+      - '**.yml'
+      - 'workflows/**'
+      - 'rules/**'
+      - 'scripts/validate-workflow.sh'
+    branches: [main]
+
+jobs:
+  validate-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install YAML validation tools
+        run: |
+          pip install pyyaml jsonschema click
+
+      - name: Validate workflow YAML structure
+        run: |
+          echo "Validating all YAML files..."
+          python scripts/yaml-validator.py workflows/
+          python scripts/yaml-validator.py rules/
+          python scripts/yaml-validator.py prompts/
+
+      - name: Check YAML syntax
+        run: |
+          find . -name "*.yaml" -o -name "*.yml" | while read f; do
+            python -c "import yaml; yaml.safe_load(open('$f'))" || {
+              echo "Invalid YAML: $f"
+              exit 1
+            }
+          done
+          echo "All YAML files are valid"
+
+  validate-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install schema tools
+        run: |
+          pip install jsonschema
+
+      - name: Validate against workflow schema
+        run: |
+          echo "Validating workflows against schema..."
+          python scripts/schema-validator.py \
+            --schema schemas/workflow-schema.json \
+            --path workflows/
+
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install markdown lint tools
+        run: |
+          pip install mdlint
+
+      - name: Lint markdown files
+        run: |
+          mdlint --config .markdownlint.yaml docs/ rules/ prompts/
+
+  check-file-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate directory structure
+        run: |
+          echo "Checking file structure matches file-structure.md..."
+          python scripts/check-structure.py --expected file-structure.md
+
+  test-workflow-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test framework
+        run: |
+          pip install pytest pytest-cov
+
+      - name: Run workflow logic tests
+        run: |
+          pytest tests/ -v --cov=workflows --cov-report=term-missing
+
+  check-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check workflow dependencies
+        run: |
+          echo "Verifying all referenced skills exist..."
+          python scripts/check-skills.py \
+            --skills-path ../Awesome-Grok-Skills \
+            --workflows-path workflows/
+
+  generate-coverage-report:
+    runs-on: ubuntu-latest
+    needs: [validate-yaml, validate-schemas, test-workflow-logic]
+    steps:
+      - name: Generate coverage report
+        run: |
+          echo "Test coverage report generated"
+          cat coverage.xml || echo "No coverage data"
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-test-results
+          path: |
+            coverage.xml
+            test-results/

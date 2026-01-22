@@ -1,0 +1,152 @@
+name: research-paper-pipeline
+version: "1.0.0"
+description: End-to-end academic research paper analysis and synthesis
+author: Grok-Workflow-Builder-v1
+tags: [research, academic, paper, analysis, synthesis]
+
+config:
+  max_steps: 10
+  timeout: 3600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - academic-synthesizer
+  - research-oracle
+  - data-visualizer
+  - tech-writer
+
+steps:
+  - name: topic-definition
+    type: thought
+    description: Define research topic and scope
+    agent: academic-synthesizer
+    inputs:
+      topic: "{{research_topic}}"
+      keywords: "{{keywords}}"
+      constraints: "{{constraints}}"  # recency, citations, etc.
+    outputs:
+      search_query: query.txt
+      scope: scope.json
+
+  - name: literature-search
+    type: action
+    description: Search for relevant papers
+    agent: research-oracle
+    inputs:
+      query: "{{steps.topic-definition.outputs.search_query}}"
+      filters: {databases: [arxiv, pubmed, google_scholar]}
+    outputs:
+      papers: papers.json
+      citation_data: citations.json
+
+  - name: paper-collection
+    type: action
+    description: Collect and filter papers
+    agent: academic-synthesizer
+    depends_on: [literature-search]
+    inputs:
+      papers: "{{steps.literature-search.outputs.papers}}"
+      criteria: "{{selection_criteria}}"  # citations, recency, relevance
+    outputs:
+      selected_papers: selected.json
+      paper_summaries: summaries.json
+
+  - name: deep-analysis
+    type: action
+    description: Deep analysis of key papers
+    agent: academic-synthesizer
+    depends_on: [paper-collection]
+    inputs:
+      papers: "{{steps.paper-collection.outputs.selected_papers}}"
+      analysis_depth: "{{analysis_depth}}"  # detailed/quick
+    outputs:
+      analysis: analysis.json
+      methodology_comparison: methods.json
+      key_findings: findings.json
+
+  - name: gap-identification
+    type: reflection
+    description: Identify research gaps
+    agent: academic-synthesizer
+    depends_on: [deep-analysis]
+    inputs:
+      analysis: "{{steps.deep-analysis.outputs.analysis}}"
+    outputs:
+      research_gaps: gaps.json
+      opportunities: opportunities.json
+      future_directions: directions.json
+
+  - name: create-visualizations
+    type: action
+    description: Create research visualizations
+    agent: data-visualizer
+    depends_on: [deep-analysis]
+    inputs:
+      citation_data: "{{steps.literature-search.outputs.citation_data}}"
+      findings: "{{steps.deep-analysis.outputs.key_findings}}"
+    outputs:
+      citation_network: network.png
+      timeline: timeline.png
+      comparison_charts: charts/
+
+  - name: synthesis
+    type: action
+    description: Synthesize findings into coherent narrative
+    agent: academic-synthesizer
+    depends_on: [gap-identification, create-visualizations]
+    inputs:
+      analysis: "{{steps.deep-analysis.outputs.analysis}}"
+      gaps: "{{steps.gap-identification.outputs.research_gaps}}"
+    outputs:
+      narrative: narrative.md
+      key_takeaways: takeaways.json
+
+  - name: generate-report
+    type: action
+    description: Generate comprehensive research report
+    agent: tech-writer
+    depends_on: [synthesis]
+    inputs:
+      narrative: "{{steps.synthesis.outputs.narrative}}"
+      visualizations: "{{steps.create-visualizations.outputs}}"
+      findings: "{{steps.deep-analysis.outputs.key_findings}}"
+    outputs:
+      report: RESEARCH_REPORT.md
+      bibliography: BIBLIOGRAPHY.md
+      appendix: APPENDIX.md
+
+  - name: create-presentation
+    type: action
+    description: Create presentation materials
+    agent: data-visualizer
+    depends_on: [generate-report]
+    inputs:
+      report: "{{steps.generate-report.outputs.report}}"
+      charts: "{{steps.create-visualizations.outputs}}"
+    outputs:
+      slides: presentation/
+      key_points: key_points.json
+
+guardrails:
+  - source_verification_required: true
+  - citation_accuracy: true
+  - no_plagiarism: true
+  - balanced_perspective: true
+
+success_criteria:
+  - comprehensive_literature_covered: true
+  - research_gaps_identified: true
+  - visualizations_created: true
+  - coherent_synthesis: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - broaden_search_criteria
+    - reduce_scope
+    - focus_on_key_papers
+  escalation_conditions:
+    - insufficient_relevant_papers
+    - paywalled_sources_blocking
+    - conflicting_findings

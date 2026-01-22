@@ -1,0 +1,89 @@
+name: reflection-loop
+version: "1.0.0"
+description: Self-reflection and improvement loop for agent outputs
+author: Grok-Workflow-Builder-v1
+tags: [reflection, self-improvement, quality, meta-cognition]
+
+pattern_type: composable_loop
+can_be_nested: true
+max_iterations: 5
+
+loop_structure:
+  - step: generate
+    type: action
+    description: Generate initial output
+    required_inputs: [task, context]
+    outputs: [output, confidence]
+    
+  - step: critique
+    type: reflection
+    description: Critically evaluate output
+    required_inputs: [output, task, quality_criteria]
+    outputs: [strengths, weaknesses, improvement_suggestions]
+    
+  - step: improve
+    type: action
+    description: Improve output based on critique
+    required_inputs: [output, critique, suggestions]
+    outputs: [improved_output, improvement_level]
+    
+  - step: verify
+    type: reflection
+    description: Verify improvement effectiveness
+    required_inputs: [original_output, improved_output, criteria]
+    outputs: [verification_result, final_confidence]
+
+termination_conditions:
+  success_criteria:
+    - improvement_level: "> 0.2"  # 20% improvement
+    - final_confidence: ">= 0.9"
+    - no_new_improvements: 2  # consecutive
+    
+  failure_criteria:
+    - max_iterations_reached: true
+    - degradation_detected: true
+    - confidence_below_threshold: "< 0.5"
+
+quality_guards:
+  critique_quality:
+    must_identify_real_issues: true
+    must_suggest_actionable_improvements: true
+    must_maintain_objectivity: true
+    
+  improvement_quality:
+    must_actually_address_critique: true
+    must_not_introduce_new_issues: true
+    must_improve_overall_quality: true
+
+configurable_parameters:
+  max_iterations:
+    type: integer
+    default: 5
+    min: 1
+    max: 10
+    
+  improvement_threshold:
+    type: float
+    default: 0.1
+    min: 0.05
+    max: 0.5
+    
+  critique_depth:
+    type: enum
+    default: thorough
+    options: [quick, standard, thorough]
+
+example_usage:
+  workflow_name: "improve-code-review"
+  initial_output: |
+    def add(a,b):
+        return a+b
+  critique:
+    strengths: ["Correct logic", "Simple"]
+    weaknesses: ["No type hints", "No docstring", "No tests"]
+    suggestions: ["Add type hints", "Add docstring", "Add tests"]
+  improved_output: |
+    def add(a: int, b: int) -> int:
+        """Add two integers and return the result."""
+        return a + b
+  final_confidence: 0.95

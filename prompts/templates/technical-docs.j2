@@ -1,0 +1,354 @@
+---
+version: "1.0.0"
+created: "2024-01-01"
+updated: "2024-01-01"
+author: "Grok-Workflow-Builder-v1"
+purpose: "Jinja template for generating technical documentation"
+---
+
+{% raw %}
+# Technical Documentation Template
+
+## Variables
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| project_name | string | Yes | Name of the project/component |
+| version | string | Yes | Current version |
+| author | string | No | Document author |
+| last_updated | date | Auto | Last update date |
+
+## Template Structure
+
+```jinja2
+# {{ project_name }} Documentation
+
+**Version**: {{ version }}  
+**Last Updated**: {{ last_updated | default(now()) }}  
+**Author**: {{ author | default('Anonymous') }}
+
+---
+
+## Overview
+
+{{ overview | required | default('Provide a brief overview of the project.') }}
+
+### Purpose
+{{ purpose | required }}
+
+### Scope
+{{ scope | required }}
+
+### Audience
+{{ audience | default('Developers, System Administrators') }}
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+| Prerequisite | Version | Required |
+|--------------|---------|----------|
+{% for prereq in prerequisites %}
+| {{ prereq.name }} | {{ prereq.version }} | {{ prereq.required | default('Yes') }} |
+{% endfor %}
+
+### Installation
+
+```bash
+# Clone the repository
+git clone {{ repository_url | required }}
+
+# Install dependencies
+{% for command in installation_commands %}
+```bash
+{{ command }}
+```
+{% endfor %}
+```
+
+### Configuration
+
+```yaml
+# config.yaml
+{% for config_item in configuration %}
+{{ config_item.key }}: {{ config_item.value }}
+{% endfor %}
+```
+
+---
+
+## Architecture
+
+### System Diagram
+
+```mermaid
+graph TD
+    A[Client] --> B[Load Balancer]
+    B --> C[API Server]
+    C --> D[Database]
+    C --> E[Cache]
+    C --> F[External Services]
+```
+
+### Components
+
+| Component | Description | Dependencies |
+|-----------|-------------|--------------|
+{% for component in components %}
+| {{ component.name }} | {{ component.description }} | {{ component.dependencies | join(', ') }} |
+{% endfor %}
+
+### Data Flow
+
+1. {{ data_flow_step_1 }}
+2. {{ data_flow_step_2 }}
+3. {{ data_flow_step_3 }}
+
+---
+
+## API Reference
+
+### Endpoints
+
+{% for endpoint in endpoints %}
+#### {{ endpoint.method }} {{ endpoint.path }}
+
+**Description**: {{ endpoint.description }}
+
+**Authentication**: {{ endpoint.authentication | default('None') }}
+
+**Parameters**:
+| Name | Type | In | Required | Description |
+|------|------|-----|----------|-------------|
+{% for param in endpoint.parameters %}
+| {{ param.name }} | {{ param.type }} | {{ param.in }} | {{ param.required | default('No') }} | {{ param.description }} |
+{% endfor %}
+
+**Request Example**:
+```json
+{{ endpoint.request_example | default('{}') | tojson(indent=2) }}
+```
+
+**Response**:
+| Status Code | Description |
+|-------------|-------------|
+{% for status in endpoint.responses %}
+| {{ status.code }} | {{ status.description }} |
+{% endfor %}
+
+**Response Example**:
+```json
+{{ endpoint.response_example | default('{}') | tojson(indent=2) }}
+```
+
+{% endfor %}
+
+---
+
+## Usage
+
+### Basic Usage
+
+```python
+{% for example in usage_examples %}
+### {{ example.title }}
+
+```python
+{{ example.code }}
+```
+
+{{ example.description }}
+{% endfor %}
+```
+
+### Advanced Usage
+
+```python
+{% for advanced in advanced_examples %}
+#### {{ advanced.title }}
+
+```python
+{{ advanced.code }}
+```
+
+{{ advanced.description }}
+{% endfor %}
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+{% for env in environment_variables %}
+| {{ env.name }} | {{ env.type }} | {{ env.default | default('None') }} | {{ env.description }} |
+{% endfor %}
+
+### Configuration Options
+
+```python
+{% for config in configuration_options %}
+# {{ config.section }}
+config = {
+{% for key, value in config.options.items() %}
+    "{{ key }}": {{ value | tojson }},
+{% endfor %}
+}
+{% endfor %}
+```
+
+---
+
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/{{ test_file }}.py
+
+# Run with coverage
+pytest --cov={{ project_name }} tests/
+```
+
+### Test Coverage
+
+| Component | Coverage | Status |
+|-----------|----------|--------|
+{% for component in test_coverage %}
+| {{ component.name }} | {{ component.coverage }}% | {{ component.status }} |
+{% endfor %}
+
+---
+
+## Deployment
+
+### Production Checklist
+
+- [ ] All tests passing
+- [ ] Security audit complete
+- [ ] Performance benchmarks met
+- [ ] Documentation updated
+- [ ] Monitoring configured
+- [ ] Rollback plan tested
+
+### Deployment Steps
+
+{% for step in deployment_steps %}
+#### Step {{ loop.index }}: {{ step.title }}
+
+```bash
+{{ step.command }}
+```
+
+{{ step.description }}
+{% endfor %}
+
+### Rollback Procedure
+
+```bash
+{{ rollback_command }}
+```
+
+{{ rollback_description }}
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Symptoms | Solution |
+|-------|----------|----------|
+{% for issue in troubleshooting %}
+| {{ issue.title }} | {{ issue.symptoms }} | {{ issue.solution }} |
+{% endfor %}
+
+### Error Codes
+
+| Code | Message | Resolution |
+|------|---------|------------|
+{% for error in error_codes %}
+| {{ error.code }} | {{ error.message }} | {{ error.resolution }} |
+{% endfor %}
+
+---
+
+## Security
+
+### Authentication
+
+{{ authentication_description | default('Describe authentication mechanism.') }}
+
+### Authorization
+
+{{ authorization_description | default('Describe authorization model.') }}
+
+### Data Protection
+
+{{ data_protection | default('Describe data encryption and protection measures.') }}
+
+---
+
+## Contributing
+
+### Contribution Guidelines
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+### Development Setup
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR-FORK/{{ project_name }}.git
+cd {{ project_name }}
+
+# Create feature branch
+git checkout -b feature/your-feature
+
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Submit PR
+```
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+---
+
+## License
+
+{{ license | default('MIT License - See LICENSE file') }}
+```
+
+## Integration Points
+
+- **Auto-generated from code**: Use tools like Swagger/OpenAPI
+- **Version-controlled**: Track in same repo as code
+- **Reviewed**: Part of code review process
+- **Deployed**: Hosted with documentation site
+
+## Performance Considerations
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Build time | < 30s | Per PR |
+| Page load | < 2s | Lighthouse |
+| Search | < 100ms | Algolia/DocSearch |
+{% endraw %}

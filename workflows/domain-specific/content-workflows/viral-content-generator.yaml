@@ -1,0 +1,141 @@
+name: viral-content-generator
+version: "1.0.0"
+description: Generate viral content optimized for specific platforms and audiences
+author: Grok-Workflow-Builder-v1
+tags: [content, viral, social-media, marketing, engagement]
+
+config:
+  max_steps: 8
+  timeout: 600
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - content-strategist
+  - meme-roaster
+  - research-oracle
+  - data-visualizer
+
+steps:
+  - name: analyze-trends
+    type: action
+    description: Research current viral trends and patterns
+    agent: research-oracle
+    inputs:
+      query: "viral content trends 2024 {{target_platform}}"
+      filters: {time_range: last_7_days}
+    outputs:
+      trends: trends.json
+      viral_patterns: patterns.json
+
+  - name: audience-analysis
+    type: thought
+    description: Analyze target audience preferences
+    agent: content-strategist
+    inputs:
+      audience: "{{target_audience}}"
+      platform: "{{target_platform}}"
+    outputs:
+      preferences: audience.json
+      content_style: style.json
+      optimal_timing: timing.json
+
+  - name: generate-hooks
+    type: action
+    description: Create multiple content hooks
+    agent: content-strategist
+    depends_on: [analyze-trends, audience-analysis]
+    inputs:
+      trends: "{{steps.analyze-trends.outputs.trends}}"
+      style: "{{steps.audience-analysis.outputs.content_style}}"
+    outputs:
+      hooks: hooks.json
+      hook_scores: scores.json
+
+  - name: create-meme-content
+    type: action
+    description: Generate meme-based content variations
+    agent: meme-roaster
+    depends_on: [generate-hooks]
+    inputs:
+      hooks: "{{steps.generate-hooks.outputs.hooks}}"
+      topic: "{{content_topic}}"
+      intensity: "{{meme_intensity | default('medium')}}"
+    outputs:
+      memes: memes.json
+      captions: captions.json
+
+  - name: design-visuals
+    type: action
+    description: Create data visualizations if applicable
+    agent: data-visualizer
+    depends_on: [create-meme-content]
+    inputs:
+      data: "{{user_data | default(null)}}"
+      topic: "{{content_topic}}"
+      style: "{{steps.audience-analysis.outputs.content_style}}"
+    outputs:
+      visualizations: visuals/
+      chart_code: charts.py
+
+  - name: platform-optimize
+    type: reflection
+    description: Optimize content for target platform
+    agent: content-strategist
+    depends_on: [create-meme-content, design-visuals]
+    inputs:
+      content: "{{steps.create-meme-content.outputs.memes}}"
+      platform: "{{target_platform}}"
+      visuals: "{{steps.design-visuals.outputs.visualizations}}"
+    outputs:
+      optimized_content: optimized.json
+      character_counts: counts.json
+      hashtag_strategy: hashtags.json
+
+  - name: generate-schedule
+    type: action
+    description: Generate posting schedule and strategy
+    agent: content-strategist
+    depends_on: [platform-optimize]
+    inputs:
+      content: "{{steps.platform-optimize.outputs.optimized_content}}"
+      timing: "{{steps.audience-analysis.outputs.optimal_timing}}"
+    outputs:
+      schedule: schedule.json
+      engagement_tips: tips.json
+
+  - name: final-review
+    type: reflection
+    description: Final review with viral score
+    agent: content-strategist
+    depends_on: [generate-schedule]
+    inputs:
+      content: "{{steps.generate-schedule.outputs.schedule}}"
+    outputs:
+      viral_score: 8.5/10
+      final_package: content_package.zip
+      recommendations: recommendations.json
+
+guardrails:
+  - never_use_harmful_content: true
+  - respect_copyright: true
+  - avoid_misinformation: true
+  - platform_policy_compliance: true
+  - authentic_engagement: true
+
+success_criteria:
+  - content_platform_optimized: true
+  - viral_score_above: 7.0
+  - multiple_variations_created: true
+  - schedule_provided: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_content
+    - change_platform_focus
+    - increase_humor_level
+  escalation_conditions:
+    - no_trend_data_available
+    - audience_mismatch
+    - platform_policy_violation_risk

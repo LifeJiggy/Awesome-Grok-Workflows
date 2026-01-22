@@ -1,0 +1,105 @@
+name: research-to-prototype
+version: 1.0.0
+description: Transform research findings into functional prototypes
+author: Grok-Workflow-Builder-v1
+tags: [research, prototyping, validation, experimentation]
+
+config:
+  max_steps: 8
+  timeout: 1200  # 20 minutes
+  retry_attempts: 3
+  parallel_execution: false
+
+required_skills:
+  - research-oracle
+  - rapid-prototyper
+  - validation-engineer
+  - physics-simulator  # if domain requires physics modeling
+
+steps:
+  - name: gather-research-data
+    type: action
+    description: Collect and validate research data from multiple sources
+    agent: research-oracle
+    inputs:
+      research_query: "{{user_query}}"
+      data_sources: "{{sources | default(['web', 'academic', 'x_api'])}}"
+    outputs:
+      research_findings: findings.json
+      data_quality_report: quality.md
+      confidence_scores: confidence.yaml
+
+  - name: analyze-feasibility
+    type: thought
+    description: Assess technical feasibility and identify key challenges
+    agent: rapid-prototyper
+    depends_on: [gather-research-data]
+    inputs:
+      findings: "{{steps.gather-research-data.outputs.research_findings}}"
+      confidence: "{{steps.gather-research-data.outputs.confidence_scores}}"
+    outputs:
+      feasibility_report: feasibility.md
+      technical_challenges: challenges.json
+      prototype_scope: scope.yaml
+
+  - name: design-prototype
+    type: action
+    description: Create minimal viable prototype design
+    agent: rapid-prototyper
+    depends_on: [analyze-feasibility]
+    inputs:
+      scope: "{{steps.analyze-feasibility.outputs.prototype_scope}}"
+      challenges: "{{steps.analyze-feasibility.outputs.technical_challenges}}"
+    outputs:
+      prototype_spec: spec.yaml
+      mockups: mockups/
+      implementation_plan: plan.md
+
+  - name: build-mvp
+    type: action
+    description: Implement core prototype functionality
+    agent: rapid-prototyper
+    depends_on: [design-prototype]
+    inputs:
+      spec: "{{steps.design-prototype.outputs.prototype_spec}}"
+      plan: "{{steps.design-prototype.outputs.implementation_plan}}"
+    outputs:
+      prototype_code: src/
+      build_log: build.log
+      dependencies: requirements.txt
+
+  - name: validate-prototype
+    type: reflection
+    description: Test prototype against research hypotheses
+    agent: validation-engineer
+    depends_on: [build-mvp]
+    inputs:
+      prototype: "{{steps.build-mvp.outputs.prototype_code}}"
+      research_findings: "{{steps.gather-research-data.outputs.research_findings}}"
+    outputs:
+      validation_results: results.json
+      test_coverage: coverage.md
+      performance_metrics: metrics.yaml
+
+guardrails:
+  - must_validate_hypotheses: true
+  - require_minimum_viability: true
+  - enforce_reproducibility: true
+  - must_document_limitations: true
+
+success_criteria:
+  - prototype_functional: true
+  - hypotheses_tested: true
+  - results_documented: true
+  - reproducible_build: true
+
+error_handling:
+  max_retries: 3
+  fallback_strategies:
+    - reduce_prototype_scope
+    - extend_research_phase
+    - simplify_validation_criteria
+  escalation_conditions:
+    - prototype_impossible
+    - validation_inconclusive
+    - research_data_insufficient

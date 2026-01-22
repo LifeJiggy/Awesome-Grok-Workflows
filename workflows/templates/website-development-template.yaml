@@ -1,0 +1,172 @@
+name: website-development-template
+version: "1.0.0"
+description: Complete website development from design to deployment
+author: Grok-Workflow-Builder-v1
+tags: [website, development, frontend, deployment, cms]
+
+config:
+  max_steps: 10
+  timeout: 2400
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - frontend-developer
+  - backend-developer
+  - devops-engineer
+  - tech-writer
+  - seo-expert
+
+steps:
+  - name: requirements-gathering
+    type: thought
+    description: Gather website requirements
+    agent: frontend-developer
+    inputs:
+      website_type: "{{site_type}}"  # static, dynamic, e-commerce, blog
+      features: "{{required_features}}"
+      design_preferences: "{{design_preferences}}"
+    outputs:
+      requirements: requirements.json
+      feature_list: features.json
+      content_structure: content.json
+
+  - name: technology-selection
+    type: thought
+    description: Select technology stack
+    agent: frontend-developer
+    depends_on: [requirements-gathering]
+    inputs:
+      requirements: "{{steps.requirements-gathering.outputs.requirements}}"
+      budget: "{{budget}}"
+      timeline: "{{timeline}}"
+    outputs:
+      tech_stack: stack.json
+      recommendation: recommendation.md
+
+  - name: design-system
+    type: action
+    description: Create design system
+    agent: frontend-developer
+    depends_on: [technology-selection]
+    inputs:
+      preferences: "{{steps.requirements-gathering.outputs.design_preferences}}"
+      framework: "{{steps.technology-selection.outputs.tech_stack.frontend}}"
+    outputs:
+      design_system: design-system/
+      components: components/
+      styling: styles/
+
+  - name: frontend-development
+    type: action
+    description: Develop frontend
+    agent: frontend-developer
+    depends_on: [design-system]
+    inputs:
+      design_system: "{{steps.design-system.outputs.design_system}}"
+      pages: "{{steps.requirements-gathering.outputs.content_structure}}"
+    outputs:
+      frontend: src/
+      pages: 10
+      components: 25
+
+  - name: backend-development
+    type: action
+    description: Develop backend if needed
+    agent: backend-developer
+    depends_on: [frontend-development]
+    inputs:
+      requirements: "{{steps.requirements-gathering.outputs.requirements}}"
+      api_needed: "{{steps.technology-selection.outputs.tech_stack.backend_needed}}"
+    outputs:
+      backend: api/
+      database: db/
+      auth: auth/
+
+  - name: content-creation
+    type: action
+    description: Create website content
+    agent: tech-writer
+    depends_on: [frontend-development]
+    inputs:
+      structure: "{{steps.requirements-gathering.outputs.content_structure}}"
+      tone: "{{content_tone}}"
+    outputs:
+      content: content/
+      copy: copy.json
+      media: media/
+
+  - name: seo-optimization
+    type: action
+    description: Optimize for search engines
+    agent: seo-expert
+    depends_on: [frontend-development, content-creation]
+    inputs:
+      frontend: "{{steps.frontend-development.outputs.frontend}}"
+      content: "{{steps.content-creation.outputs.content}}"
+    outputs:
+      seo_config: seo.json
+      meta_tags: meta.yaml
+      sitemap: sitemap.xml
+      robots: robots.txt
+
+  - name: testing
+    type: action
+    description: Set up testing
+    agent: validation-engineer
+    depends_on: [frontend-development, backend-development]
+    inputs:
+      frontend: "{{steps.frontend-development.outputs.frontend}}"
+      backend: "{{steps.backend-development.outputs.backend}}"
+    outputs:
+      unit_tests: tests/unit/
+      e2e_tests: tests/e2e/
+      coverage_report: coverage/
+
+  - name: deployment-setup
+    type: action
+    description: Set up deployment
+    agent: devops-engineer
+    depends_on: [testing, seo-optimization]
+    inputs:
+      tech_stack: "{{steps.technology-selection.outputs.tech_stack}}"
+      testing_results: "{{steps.testing.outputs.coverage_report}}"
+    outputs:
+      deployment_config: .github/workflows/deploy.yaml
+      dockerfile: Dockerfile
+      hosting_config: hosting.json
+
+  - name: launch-check
+    type: reflection
+    description: Final launch checklist
+    agent: devops-engineer
+    depends_on: [deployment-setup]
+    inputs:
+      config: "{{steps.deployment-setup.outputs.deployment_config}}"
+    outputs:
+      launch_checklist: checklist.json
+      final_approval: true/false
+
+guardrails:
+  - accessibility_compliance: true
+  - performance_benchmarks_met: true
+  - seo_requirements_met: true
+  - mobile_responsive: true
+  - security_headers_configured: true
+
+success_criteria:
+  - all_features_implemented: true
+  - tests_passing: true
+  - performance_score_above: 90
+  - seo_score_above: 80
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_features
+    - use_managed_services
+    - adjust_timeline
+  escalation_conditions:
+  - performance_requirements_unmet
+  - accessibility_issues
+  - security_vulnerabilities

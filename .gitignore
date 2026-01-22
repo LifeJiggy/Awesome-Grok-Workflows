@@ -1,0 +1,63 @@
+# Dependencies
+venv/
+env/
+.venv/
+.env
+.env.local
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Logs
+*.log
+logs/
+
+# Generated files
+docs/diagrams/*.png
+docs/diagrams/*.svg
+docs/generated/
+*.generated.yaml
+
+# Workflow state
+workflow_state/
+*.state.yaml
+
+# Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.cache/
+
+# Custom
+secrets/
+credentials/
+private/
+.local/

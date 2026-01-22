@@ -1,0 +1,186 @@
+---
+version: "1.0.0"
+created: "2024-01-01"
+updated: "2024-01-01"
+author: "Grok-Workflow-Builder-v1"
+purpose: "Jinja template for chain of verification pattern"
+---
+
+{% import "prompts/system/grok-workflow-orchestrator.j2" as orchestrator %}
+
+# Chain of Verification Template
+
+## Purpose
+Generate a self-verifying response system where initial answers are systematically checked and corrected.
+
+## Template Variables
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| question | string | Yes | The question to answer |
+| verification_depth | integer | No | Number of verification passes (default: 3) |
+| confidence_threshold | float | No | Minimum confidence for acceptance (default: 0.9) |
+| domain | string | Yes | Domain for specialized verification |
+| output_format | string | No | Format for final output |
+
+## Template Structure
+
+```jinja2
+{% raw %}
+{# CHAIN OF VERIFICATION TEMPLATE #}
+
+## Phase 1: Initial Response Generation
+
+**Task**: Generate an initial answer to the question.
+
+**Question**: {{ question }}
+
+**Domain Context**: {{ domain_context | default('general') }}
+
+**Initial Answer**:
+[Generate a comprehensive answer, capturing:
+- Primary conclusion
+- Supporting reasoning
+- Confidence level (1-10)
+- Assumptions made
+- Potential weak points]
+
+## Phase 2: Decomposition & Independent Verification
+
+**Task**: Break down the answer and verify each component independently.
+
+### 2.1 Claim Extraction
+Extract all testable claims from the initial answer:
+
+| Claim # | Claim Statement | Verifiability | Confidence |
+|---------|-----------------|---------------|------------|
+| 1 | | High/Medium/Low | /10 |
+| 2 | | High/Medium/Low | /10 |
+| ... | | | |
+
+### 2.2 Independent Verification
+For each claim with confidence < {{ verification_threshold | default(8) }}:
+
+**Claim**: [claim statement]
+
+**Verification Method**:
+[Choose: 
+- Cross-reference authoritative sources
+- Logical proof/derivation
+- Empirical test/check
+- Expert consultation]
+
+**Verification Result**: [Pass/Fail/Partial]
+
+**Evidence**: [Supporting or refuting evidence]
+
+**Updated Confidence**: /10
+
+## Phase 3: Cross-Checking
+
+**Task**: Perform systematic cross-checks between claims.
+
+### 3.1 Consistency Check
+- Do claims support or contradict each other?
+- Are there logical dependencies?
+- Is the reasoning chain coherent?
+
+### 3.2 Edge Case Testing
+- Does the answer handle edge cases?
+- What are the boundary conditions?
+- Where might the answer fail?
+
+### 3.3 Adversarial Testing
+- How would this answer hold up to criticism?
+- What counterarguments exist?
+- What's the strongest objection?
+
+## Phase 4: Synthesis & Refinement
+
+**Task**: Combine verification results into a refined answer.
+
+### 4.1 Confidence Calibration
+[Calculate overall confidence as weighted average
+of verified claim confidences]
+
+### 4.2 Answer Refinement
+[Update the initial answer based on verification:
+- Correct identified errors
+- Add caveats and limitations
+- Strengthen weak points
+- Acknowledge remaining uncertainties]
+
+### 4.3 Final Answer Structure
+[Present refined answer with:
+- Confidence score
+- Supporting evidence summary
+- Known limitations
+- Questions for further verification]
+
+## Phase 5: Final Validation
+
+**Checklist**:
+- [ ] All claims verified (confidence >= {{ confidence_threshold }})
+- [ ] Logical consistency maintained
+- [ ] Edge cases addressed
+- [ ] Adversarial challenges considered
+- [ ] Assumptions documented
+- [ ] Limitations acknowledged
+
+**Final Confidence Score**: /10
+
+**Ready for Output**: Yes/No
+
+[If No: Return to Phase 2 with targeted verification]
+{% endraw %}
+```
+
+## Usage Example
+
+```yaml
+chain_of_verification:
+  question: "What is the time complexity of quicksort?"
+  domain: "algorithms"
+  verification_depth: 3
+  confidence_threshold: 0.9
+  
+  execution:
+    - initial_answer: |
+        Quicksort has O(n log n) average time complexity.
+        The worst case is O(n²) when the pivot is poorly chosen.
+      
+    - verification_steps:
+        - claim: "Average case O(n log n)"
+          method: "Mathematical derivation"
+          result: "Verified"
+          
+        - claim: "Worst case O(n²)"
+          method: "Counterexample"
+          result: "Verified"
+          
+    - final_confidence: 0.95
+    - output_ready: true
+```
+
+## Integration Points
+
+- **ReAct Loop**: Use CoV as the reflection step
+- **Multi-Agent**: Assign different agents to each verification phase
+- **Testing**: Generate test cases from verification claims
+- **Documentation**: Capture verification trace as audit trail
+
+## Performance Considerations
+
+| Phase | Complexity | Optimization |
+|-------|------------|--------------|
+| Initial Answer | O(n) | Pre-compute domain knowledge |
+| Claim Extraction | O(n) | Automated NER/classification |
+| Verification | O(k·n) | Parallel verification |
+| Synthesis | O(n) | Template-based composition |
+
+## Error Handling
+
+- **Low Confidence**: Automatically escalate to human review
+- **Contradictory Evidence**: Flag for manual resolution
+- **Timeout**: Return best effort with confidence penalty
+- **Invalid Question**: Request clarification with alternatives

@@ -1,0 +1,175 @@
+# README Template
+
+## Purpose
+Generate comprehensive README documentation for projects.
+
+## Template Variables
+- {{project_name}}: Project name
+- {{description}}: One-line description
+- {{features}}: List of key features
+- {{tech_stack}}: Technologies used
+- {{getting_started}}: Setup instructions
+- {{usage_examples}}: How to use the project
+- {{contributing}}: Contributing guidelines
+- {{license}}: License type
+
+## Generated Output
+
+\`\`\`markdown
+# {{project_name}}
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI/CD](https://github.com/org/{{project_name}}/actions/workflows/ci.yml/badge.svg)](https://github.com/org/{{project_name}}/actions)
+
+{{description}}
+
+## ✨ Features
+
+{% for feature in features %}
+- **{{feature.title}}** - {{feature.description}}
+{% endfor %}
+
+## 🛠 Tech Stack
+
+{% for category in tech_stack %}
+### {{category.name}}
+{% for item in category.items %}
+- {{item}}
+{% endfor %}
+
+{% endfor %}
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+{% for prereq in prerequisites %}
+- {{prereq}}
+{% endfor %}
+
+### Installation
+
+\`\`\`bash
+# Clone the repository
+git clone https://github.com/org/{{project_name}}.git
+cd {{project_name}}
+
+# Install dependencies
+{% for cmd in install_commands %}
+\`\`\`bash
+{{cmd}}
+\`\`\`
+{% endfor %}
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+\`\`\`
+
+### Quick Start
+
+\`\`\`bash
+# Start the development server
+npm run dev
+
+# Or using Docker
+docker-compose up -d
+\`\`\`
+
+## 📖 Usage
+
+### Basic Example
+
+\`\`\`{% if language == 'python' %}python{% elif language == 'javascript' %}javascript{% elif language == 'bash' %}bash{% endif %}
+{{usage_example}}
+\`\`\`
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+{% for endpoint in endpoints %}
+| {{endpoint.method}} | `{{endpoint.path}}` | {{endpoint.description}} |
+{% endfor %}
+
+### Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+{% for config in configurations %}
+| {{config.var}} | {{config.required}} | {{config.default}} | {{config.description}} |
+{% endfor %}
+
+## 🧪 Testing
+
+\`\`\`bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm test -- --coverage
+
+# Run specific test suite
+npm test -- --testNamePattern="auth"
+\`\`\`
+
+## 📦 Deployment
+
+### Docker
+
+\`\`\`bash
+# Build production image
+docker build -t {{project_name}}:prod .
+
+# Run production container
+docker run -p 8080:8080 {{project_name}}:prod
+\`\`\`
+
+### Kubernetes
+
+\`\`\`bash
+# Deploy to Kubernetes
+kubectl apply -f k8s/
+\`\`\`
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+
+\`\`\`bash
+# Run linting
+npm run lint
+
+# Auto-fix issues
+npm run lint:fix
+
+# Format code
+npm run format
+\`\`\`
+
+## 📄 License
+
+This project is licensed under the {{license}} License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Inspiration](https://github.com/inspiration)
+- [Contributors](https://github.com/org/{{project_name}}/graphs/contributors)
+- [Awesome Lists](https://github.com/sindresorhus/awesome)
+
+---
+
+<p align="center">
+  Made with ❤️ by the {{project_name}} team
+</p>
+\`\`\`

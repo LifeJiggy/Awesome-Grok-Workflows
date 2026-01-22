@@ -1,0 +1,139 @@
+name: meme-to-viral-code-delegation
+version: 1.0.0
+description: Take buggy code, roast with memes, fix using TDD + efficient patterns
+author: Grok-Workflow-Builder-v1
+tags: [memes, code-review, debugging, TDD, efficient-patterns]
+
+config:
+  max_steps: 6  # Speed demon: fast workflow
+  timeout: 600  # 10 minutes max
+  retry_attempts: 1
+  parallel_execution: false
+
+required_skills:
+  - meme-roaster
+  - code-review-team
+  - tdd-agent
+  - efficient-code-patterns
+
+steps:
+  - name: analyze-buggy-code
+    type: action
+    description: Find bugs with savage meme commentary
+    agent: meme-roaster
+    inputs:
+      buggy_code: "{{user_code}}"
+      roast_level: "{{roast_intensity | default('medium_savage')}}"
+    outputs:
+      bug_analysis: bugs.json
+      meme_roast: roast.md
+      physics_analogy: physics.md  # Physics violation explanation
+
+  - name: design-tdd-strategy
+    type: thought
+    description: Plan TDD approach to fix identified issues
+    agent: tdd-agent
+    depends_on: [analyze-buggy-code]
+    inputs:
+      bugs: "{{steps.analyze-buggy-code.outputs.bug_analysis}}"
+      code: "{{user_code}}"
+    outputs:
+      test_plan: tests.md
+      refactoring_strategy: refactor.yaml
+      test_cases: test_cases.json
+
+  - name: write-tests-first
+    type: action
+    description: Implement failing tests TDD-style
+    agent: tdd-agent
+    depends_on: [design-tdd-strategy]
+    inputs:
+      test_cases: "{{steps.design-tdd-strategy.outputs.test_cases}}"
+      strategy: "{{steps.design-tdd-strategy.outputs.refactoring_strategy}}"
+    outputs:
+      test_suite: tests/
+      test_results: results.json
+
+  - name: apply-efficient-patterns
+    type: action
+    description: Fix code using efficient patterns while making tests pass
+    agent: efficient-code-patterns
+    depends_on: [write-tests-first]
+    inputs:
+      tests: "{{steps.write-tests-first.outputs.test_suite}}"
+      original_code: "{{user_code}}"
+      bugs: "{{steps.analyze-buggy-code.outputs.bug_analysis}}"
+    outputs:
+      fixed_code: fixed/
+      patterns_used: patterns.md
+      performance_improvements: perf.yaml
+
+  - name: final-validation
+    type: reflection
+    description: Validate fixes with final meme summary
+    agent: code-review-team
+    depends_on: [apply-efficient-patterns]
+    inputs:
+      fixed_code: "{{steps.apply-efficient-patterns.outputs.fixed_code}}"
+      tests: "{{steps.write-tests-first.outputs.test_suite}}"
+      roast: "{{steps.analyze-buggy-code.outputs.meme_roast}}"
+    outputs:
+      validation_report: validation.md
+      final_meme_summary: final_roast.md
+      deployment_ready: ready.yaml
+
+guardrails:
+  - must_never_ship_broken_code: true
+  - require_all_tests_pass: true
+  - must_include_physics_analogy: true
+  - enforce_meme_quality: true
+
+success_criteria:
+  - all_tests_pass: true
+  - code_performance_improved: true
+  - bugs_eliminated: true
+  - meme_satisfaction_score_above_8: true
+
+error_handling:
+  max_retries: 1
+  fallback_strategies:
+    - simplify_refactoring_scope
+    - reduce_meme_intensity
+    - extend_timeout_gracefully
+  escalation_conditions:
+    - tests_cannot_pass
+    - performance_degrades
+    - physics_laws_violated
+
+# Example trace (required by build-prompt)
+example_trace:
+  user_input: |
+    function calculateSum(arr) {
+      let sum = 0;
+      for (let i = 0; i <= arr.length; i++) {
+        sum += arr[i];
+      }
+      return sum;
+    }
+  
+  step1_analyze:
+    bugs_found: ["off-by-one error accessing arr[arr.length] = undefined"]
+    meme_roast: "This loop runs like Sisyphus pushing his boulder - always one step too far! 🏔️💀"
+    physics_analogy: "Violates conservation of array indices - you're trying to access non-existent data from empty space"
+  
+  step2_tdd_strategy:
+    test_cases: ["empty array returns 0", "single element works", "large array performs"]
+    
+  step3_tests_first:
+    all_tests_failing: true  # TDD red phase
+    
+  step4_fix_patterns:
+    fixed_code: |
+      function calculateSum(arr) {
+        return arr.reduce((sum, val) => sum + val, 0);
+      }
+    patterns_used: ["functional programming", "reduce method", "implicit bounds handling"]
+    
+  step5_validation:
+    tests_passing: true
+    final_meme: "From Sisyphus nightmare to functional zen - this code now flows like water through pipes! 💧✨"

@@ -1,0 +1,224 @@
+# Test Generation Prompt Template
+
+## Purpose
+Generate comprehensive test suites for code modules.
+
+## Template Variables
+- {{code}}: The code to test
+- {{language}}: Programming language
+- {{test_framework}}: Testing framework to use
+- {{test_types}}: Types of tests (unit, integration, e2e)
+- {{coverage_target}}: Minimum coverage percentage
+- {{edge_cases}}: Specific edge cases to test
+- {{mock_dependencies}}: External dependencies to mock
+
+## Prompt Structure
+
+```
+You are a senior QA engineer specializing in test-driven development.
+
+## Code Under Test
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Testing Requirements
+- Framework: {{test_framework}}
+- Test Types: {{test_types}}
+- Coverage Target: {{coverage_target}}%
+- Focus Areas: {{edge_cases}}
+
+## Test Coverage Requirements
+
+### Must-Have
+1. Happy path tests (main functionality)
+2. Error handling tests
+3. Edge case tests
+4. Boundary value tests
+5. Null/undefined handling
+
+### Should-Have
+1. Performance tests (if applicable)
+2. Security tests (input validation)
+3. Integration tests (if multiple components)
+4. Property-based tests (if applicable)
+
+## Output Format
+Provide tests in this structure:
+
+\`\`\`{{language}}
+# Tests for [module_name]
+# Framework: {{test_framework}}
+
+describe('Module Name', () => {
+  // Tests go here
+})
+\`\`\`
+
+For each test, include:
+1. Descriptive name (given-when-then format)
+2. Clear setup
+3. Action being tested
+4. Assertion(s)
+5. Cleanup (if needed)
+
+## Test Naming Convention
+Use descriptive names:
+- ❌ "test1", "test2"
+- ✅ "should_return_user_when_valid_id_provided"
+- ✅ "should_throw_error_when_database_unavailable"
+- ✅ "should_handle_concurrent_requests_gracefully"
+
+## Example Test Patterns
+
+### Unit Test Pattern
+\`\`\`{{language}}
+describe('UserService', () => {
+  let service;
+  let mockRepository;
+
+  beforeEach(() => {
+    mockRepository = {
+      findById: jest.fn(),
+      create: jest.fn(),
+    };
+    service = new UserService(mockRepository);
+  });
+
+  describe('getUserById', () => {
+    it('should return user when valid id provided', async () => {
+      // Given
+      const userId = 'user-123';
+      const expectedUser = { id: userId, name: 'John' };
+      mockRepository.findById.mockResolvedValue(expectedUser);
+
+      // When
+      const result = await service.getUserById(userId);
+
+      // Then
+      expect(result).toEqual(expectedUser);
+      expect(mockRepository.findById).toHaveBeenCalledWith(userId);
+    });
+
+    it('should throw NotFoundError when user not found', async () => {
+      // Given
+      const userId = 'nonexistent';
+      mockRepository.findById.mockResolvedValue(null);
+
+      // When/Then
+      await expect(service.getUserById(userId))
+        .rejects
+        .toThrow(NotFoundError);
+    });
+  });
+});
+\`\`\`
+
+### Integration Test Pattern
+\`\`\`{{language}}
+describe('User API Integration', () => {
+  let app;
+  let db;
+
+  beforeAll(async () => {
+    app = await createTestApp();
+    db = await createTestDatabase();
+  });
+
+  afterAll(async () => {
+    await db.cleanup();
+  });
+
+  it('should create and retrieve user', async () => {
+    // Create user
+    const createResponse = await request(app)
+      .post('/api/users')
+      .send({ name: 'Test User', email: 'test@example.com' })
+      .expect(201);
+
+    expect(createResponse.body.id).toBeDefined();
+
+    // Retrieve user
+    const getResponse = await request(app)
+      .get(`/api/users/${createResponse.body.id}`)
+      .expect(200);
+
+    expect(getResponse.body.name).toBe('Test User');
+  });
+});
+\`\`\`
+
+## Validation Checklist
+- [ ] All functions have tests
+- [ ] Edge cases covered
+- [ ] Error scenarios tested
+- [ ] Tests are isolated (no shared state)
+- [ ] Mocks are appropriate
+- [ ] Tests are maintainable (no duplication)
+- [ ] Coverage meets target
+```
+
+## Usage Example
+```
+You are a senior QA engineer.
+
+## Code Under Test
+```python
+def calculate_loan_approval(
+    credit_score: int,
+    income: float,
+    debt: float,
+    loan_amount: float
+) -> dict:
+    """
+    Calculate loan approval decision based on financial metrics.
+    
+    Rules:
+    - Credit score must be >= 620
+    - Debt-to-income ratio must be < 0.43
+    - Loan amount <= 4x annual income
+    - If all pass: approved with rate
+    - If credit < 620: denied
+    - If DTI > 0.43: review required
+    - If loan too large: review required
+    """
+    result = {
+        "approved": False,
+        "decision": "pending",
+        "interest_rate": None,
+        "reason": None
+    }
+    
+    # Credit score check
+    if credit_score < 620:
+        result["decision"] = "denied"
+        result["reason"] = "credit_score_below_threshold"
+        return result
+    
+    # Debt-to-income ratio
+    dti = debt / income if income > 0 else float('inf')
+    if dti > 0.43:
+        result["decision"] = "review_required"
+        result["reason"] = "high_debt_to_income"
+        return result
+    
+    # Loan amount check
+    max_loan = income * 4
+    if loan_amount > max_loan:
+        result["decision"] = "review_required"
+        result["reason"] = "loan_amount_exceeds_limit"
+        return result
+    
+    # All checks passed
+    result["approved"] = True
+    result["decision"] = "approved"
+    result["interest_rate"] = max(3.5, 7.0 - (credit_score - 620) / 100)
+    return result
+```
+
+## Testing Requirements
+- Framework: pytest
+- Test Types: unit tests
+- Coverage Target: 100%
+- Focus Areas: boundary values, edge cases, error handling
+```

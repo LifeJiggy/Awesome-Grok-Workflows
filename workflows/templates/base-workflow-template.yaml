@@ -1,0 +1,96 @@
+name: base-workflow-template
+version: 1.0.0
+description: Base template for creating production-grade Grok workflows
+author: Grok-Workflow-Builder-v1
+tags: [template, workflow, production, base]
+
+# Template Metadata - Fill in for specific workflows
+name: "{{workflow_name | required}}"
+version: "1.0.0"
+description: "{{workflow_description | required}}"
+author: "Grok-Workflow-Builder-v1"
+tags: [{{workflow_tags | default(['general'])}}]
+
+# Workflow Configuration
+config:
+  max_steps: {{max_steps | default(10)}}
+  timeout: {{timeout | default(1200)}}  # seconds
+  retry_attempts: {{retry_attempts | default(2)}}
+  parallel_execution: {{parallel_execution | default(true)}}
+  
+# Required Skills from Awesome-Grok-Skills
+required_skills:
+  {% for skill in required_skills %}
+  - {{skill}}
+  {% endfor %}
+
+# Workflow Steps
+steps:
+  {% for step in steps %}
+  - name: {{step.name | required}}
+    type: {{step.type | default('action')}}  # thought/action/reflection
+    description: {{step.description | required}}
+    agent: {{step.agent | required}}
+    {% if step.depends_on %}
+    depends_on: [{{step.depends_on | join(', ')}}]
+    {% endif %}
+    inputs:
+      {% for input, source in step.inputs.items() %}
+      {{input}}: {{source}}
+      {% endfor %}
+    outputs:
+      {% for output in step.outputs %}
+      - {{output}}
+      {% endfor %}
+  {% endfor %}
+
+# Guardrails - Safety and Quality Rules
+guardrails:
+  {% for guardrail in guardrails %}
+  {{guardrail.name}}: {{guardrail.value}}
+  {% endfor %}
+
+# Success Criteria
+success_criteria:
+  {% for criteria in success_criteria %}
+  {{criteria.name}}: {{criteria.value}}
+  {% endfor %}
+
+# Error Handling
+error_handling:
+  max_retries: {{error_handling.max_retries | default(2)}}
+  fallback_strategies:
+    {% for strategy in error_handling.fallback_strategies %}
+    - {{strategy}}
+    {% endfor %}
+  escalation_conditions:
+    {% for condition in error_handling.escalation_conditions %}
+    - {{condition}}
+    {% endfor %}
+
+# Optional Features
+{% if monitoring_enabled %}
+monitoring:
+  real_time_tracking: true
+  progress_metrics: true
+  performance_logging: true
+{% endif %}
+
+{% if testing_enabled %}
+testing:
+  unit_tests: true
+  integration_tests: {{testing.integration | default(true)}}
+  performance_tests: {{testing.performance | default(false)}}
+{% endif %}
+
+# Documentation Requirements
+documentation:
+  must_include_examples: {{docs.examples | default(true)}}
+  must_include_diagram: {{docs.diagram | default(true)}}
+  must_trace_execution: {{docs.trace | default(true)}}
+
+# Version Control
+versioning:
+  semantic_versioning: true
+  change_log_required: true
+  backward_compatibility: {{versioning.backward_compatible | default(false)}}

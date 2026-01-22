@@ -1,0 +1,126 @@
+name: code-review-pipeline
+version: "1.0.0"
+description: Comprehensive code review pipeline with multiple specialized reviewers
+author: Grok-Workflow-Builder-v1
+tags: [code-review, security, quality, pipeline, automation]
+
+config:
+  max_steps: 8
+  timeout: 1200
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - code-review-team
+  - security-auditor
+  - efficient-code-patterns
+  - tech-writer
+
+steps:
+  - name: initial-analysis
+    type: action
+    description: Initial code structure and quality analysis
+    agent: code-review-team
+    inputs:
+      code: "{{user_code}}"
+      language: "{{code_language}}"
+      review_types: [quality, structure, documentation]
+    outputs:
+      initial_report: initial_review.json
+      quality_score: 7.5
+
+  - name: security-scan
+    type: action
+    description: Comprehensive security vulnerability scan
+    agent: security-auditor
+    depends_on: [initial-analysis]
+    inputs:
+      code: "{{user_code}}"
+      scope: full
+      frameworks: [owasp, cwe]
+    outputs:
+      security_report: security_review.json
+      vulnerabilities: []
+      security_score: 8.0
+
+  - name: performance-analysis
+    type: action
+    description: Performance and efficiency analysis
+    agent: efficient-code-patterns
+    depends_on: [initial-analysis]
+    inputs:
+      code: "{{user_code}}"
+      analysis_type: [time_complexity, space_complexity, i_o]
+    outputs:
+      performance_report: performance.json
+      bottlenecks: []
+      optimization_score: 6.5
+
+  - name: generate-optimizations
+    type: action
+    description: Generate optimization suggestions
+    agent: efficient-code-patterns
+    depends_on: [performance-analysis]
+    inputs:
+      bottlenecks: "{{steps.performance-analysis.outputs.bottlenecks}}"
+      code: "{{user_code}}"
+    outputs:
+      optimizations: optimizations.json
+      optimized_code: code_optimized.py
+
+  - name: consolidate-issues
+    type: reflection
+    description: Consolidate all issues from different reviewers
+    agent: code-review-team
+    depends_on: [initial-analysis, security-scan, performance-analysis]
+    inputs:
+      quality: "{{steps.initial-analysis.outputs.initial_report}}"
+      security: "{{steps.security-scan.outputs.security_report}}"
+      performance: "{{steps.performance-analysis.outputs.performance_report}}"
+    outputs:
+      consolidated_issues: issues.json
+      priority_order: []
+
+  - name: create-fix-plan
+    type: action
+    description: Create prioritized fix plan
+    agent: code-review-team
+    depends_on: [consolidate-issues]
+    inputs:
+      issues: "{{steps.consolidate-issues.outputs.consolidated_issues}}"
+    outputs:
+      fix_plan: fix_plan.md
+      estimated_effort: 8h
+
+  - name: document-review
+    type: action
+    description: Generate comprehensive review documentation
+    agent: tech-writer
+    depends_on: [create-fix-plan, security-scan, performance-analysis]
+    inputs:
+      fix_plan: "{{steps.create-fix-plan.outputs.fix_plan}}"
+      security: "{{steps.security-scan.outputs.security_report}}"
+      performance: "{{steps.performance-analysis.outputs.performance_report}}"
+    outputs:
+      documentation: CODE_REVIEW_REPORT.md
+
+guardrails:
+  - must_include_security_review: true
+  - must_prioritize_critical_issues: true
+  - provide_actionable_feedback: true
+  - maintain_professional_tone: true
+
+success_criteria:
+  - all_review_types_complete: true
+  - security_issues_identified: true
+  - performance_bottlenecks_found: true
+  - actionable_fix_plan: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - focus_on_critical_issues
+    - skip_performance_if_time
+  escalation_conditions:
+    - critical_security_vulnerabilities
+    - code_too_complex_to_review

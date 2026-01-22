@@ -1,0 +1,192 @@
+---
+version: "1.0.0"
+created: "2024-01-01"
+updated: "2024-01-01"
+author: "Grok-Workflow-Builder-v1"
+purpose: "Jinja template for SQL query generation and optimization"
+---
+
+{% raw %}
+# SQL Query Template
+
+## Variables
+
+| Variable | Type | Required | Description |
+|----------|------|----------|-------------|
+| query_type | enum | Yes | SELECT/INSERT/UPDATE/DELETE |
+| table | string | Yes | Target table name |
+| columns | list | Yes | Columns to select/modify |
+| conditions | list | No | WHERE clause conditions |
+| joins | list | No | JOIN clauses |
+| aggregations | list | No | GROUP BY clauses |
+| order | dict | No | ORDER BY specification |
+| pagination | dict | No | LIMIT/OFFSET |
+
+## Template Structure
+
+```jinja2
+{% set query_type = query_type | upper %}
+
+{% if query_type == 'SELECT' %}
+SELECT
+{% for col in columns %}
+    {{ col.name }}{% if col.alias %} AS {{ col.alias }}{% endif %}{% if not loop.last %},{% endif %}
+{% endfor %}
+FROM {{ table }}
+{% for join in joins %}
+    {{ join.type }} JOIN {{ join.table }}
+    ON {{ join.condition }}
+{% endfor %}
+{% if conditions %}
+WHERE
+{% for cond in conditions %}
+    {{ cond }}{% if not loop.last %} AND{% endif %}
+{% endfor %}
+{% endif %}
+{% if aggregations %}
+GROUP BY
+{% for agg in aggregations %}
+    {{ agg }}{% if not loop.last %},{% endif %}
+{% endfor %}
+{% endif %}
+{% if order %}
+ORDER BY
+{% for o in order %}
+    {{ o.column }} {{ o.direction | default('ASC') }}{% if not loop.last %},{% endif %}
+{% endfor %}
+{% endif %}
+{% if pagination %}
+LIMIT {{ pagination.limit }}
+OFFSET {{ pagination.offset }}
+{% endif %};
+```
+
+## Usage Examples
+
+### Basic SELECT
+```jinja2
+{% set query = {
+  'query_type': 'select',
+  'table': 'users',
+  'columns': [
+    {'name': 'id'},
+    {'name': 'email'},
+    {'name': 'created_at'}
+  ],
+  'conditions': [
+    'status = "active"',
+    'created_at > "2024-01-01"'
+  ]
+} %}
+{{ query | to_sql }}
+```
+```sql
+SELECT
+    id,
+    email,
+    created_at
+FROM users
+WHERE
+    status = "active" AND created_at > "2024-01-01";
+```
+
+### JOIN Query
+```jinja2
+{% set query = {
+  'query_type': 'select',
+  'table': 'orders',
+  'columns': [
+    {'name': 'orders.id'},
+    {'name': 'users.name', 'alias': 'customer_name'},
+    {'name': 'orders.total'}
+  ],
+  'joins': [
+    {'type': 'INNER', 'table': 'users', 'condition': 'orders.user_id = users.id'}
+  ],
+  'conditions': [
+    'orders.status = "completed"',
+    'orders.created_at >= "2024-01-01"'
+  ],
+  'order': [{'column': 'orders.created_at', 'direction': 'DESC'}],
+  'pagination': {'limit': 10}
+} %}
+{{ query | to_sql }}
+```
+```sql
+SELECT
+    orders.id,
+    users.name AS customer_name,
+    orders.total
+FROM orders
+    INNER JOIN users ON orders.user_id = users.id
+WHERE
+    orders.status = "completed" AND orders.created_at >= "2024-01-01"
+ORDER BY orders.created_at DESC
+LIMIT 10;
+```
+
+### Aggregation
+```jinja2
+{% set query = {
+  'query_type': 'select',
+  'table': 'orders',
+  'columns': [
+    {'name': 'user_id'},
+    {'name': 'COUNT(*) AS order_count'},
+    {'name': 'SUM(total) AS total_spent'},
+    {'name': 'AVG(total) AS avg_order'}
+  ],
+  'aggregations': ['user_id'],
+  'conditions': ['status = "completed"'],
+  'order': [{'column': 'total_spent', 'direction': 'DESC'}]
+} %}
+{{ query | to_sql }}
+```
+```sql
+SELECT
+    user_id,
+    COUNT(*) AS order_count,
+    SUM(total) AS total_spent,
+    AVG(total) AS avg_order
+FROM orders
+WHERE
+    status = "completed"
+GROUP BY user_id
+ORDER BY total_spent DESC;
+```
+
+## Optimization Tips
+
+### Index Usage
+```sql
+-- ✅ Good: Uses index
+SELECT * FROM users WHERE email = 'test@example.com';
+
+-- ❌ Bad: Function on column prevents index
+SELECT * FROM users WHERE LOWER(email) = 'test@example.com';
+
+-- ✅ Good: Use functional index
+SELECT * FROM users WHERE email = LOWER('TEST@EXAMPLE.COM');
+```
+
+### Query Patterns
+
+| Pattern | Good | Bad |
+|---------|------|-----|
+| Pagination | LIMIT with indexed column | OFFSET high numbers |
+| Wildcards | 'prefix%' | '%any%' |
+| OR clause | UNION ALL | IN with many values |
+| Subqueries | JOIN | Correlated subquery |
+| Aggregations | Filter first, then aggregate | Aggregate everything |
+
+## Performance Checklist
+
+- [ ] WHERE clause uses indexed columns
+- [ ] JOIN conditions have indexes
+- [ ] EXPLAIN ANALYZE shows index scans
+- [ ] No SELECT *
+- [ ] Proper pagination (keyset > OFFSET)
+- [ ] Aggregations filtered before grouping
+- [ ] Avoid N+1 queries
+- [ ] Use CTEs for readability
+{% endraw %}

@@ -1,0 +1,104 @@
+name: Auto-Render Workflow Diagrams
+
+on:
+  push:
+    paths:
+      - 'workflows/**'
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      workflow_path:
+        description: 'Path to workflow YAML file'
+        required: false
+        default: 'workflows/'
+      output_format:
+        description: 'Output format'
+        required: false
+        default: 'png'
+        type: choice
+        options:
+          - png
+          - svg
+          - html
+
+jobs:
+  generate-mermaid-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install diagram generation tools
+        run: |
+          pip install pyyaml jinja2 click
+
+      - name: Generate Mermaid diagrams
+        run: |
+          echo "Generating Mermaid diagrams from workflow YAML..."
+          python scripts/render-diagram.py \
+            --input workflows/ \
+            --output docs/diagrams/ \
+            --format svg
+
+      - name: Generate HTML documentation
+        run: |
+          echo "Generating HTML documentation with embedded diagrams..."
+          python scripts/generate-docs.py \
+            --input workflows/ \
+            --output docs/generated/
+
+      - name: Upload diagram artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-diagrams
+          path: |
+            docs/diagrams/
+            docs/generated/
+
+  generate-sequence-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Mermaid CLI
+        run: |
+          npm install -g @mermaid-js/mermaid-cli
+
+      - name: Generate sequence diagrams
+        run: |
+          for workflow in workflows/**/*.yaml; do
+            workflow_name=$(basename "$workflow" .yaml)
+            echo "Generating diagram for: $workflow_name"
+            python scripts/yaml-to-mermaid.py "$workflow" > "docs/diagrams/${workflow_name}.mmd"
+            mmdc -i "docs/diagrams/${workflow_name}.mmd" \
+              -o "docs/diagrams/${workflow_name}.png" \
+              --width 1200 \
+              --height 800
+          done
+
+  publish-docs:
+    runs-on: ubuntu-latest
+    needs: [generate-mermaid-diagrams, generate-sequence-diagrams]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/generated
+          publish_branch: gh-pages
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}

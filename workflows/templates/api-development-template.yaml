@@ -1,0 +1,151 @@
+name: api-development-template
+version: "1.0.0"
+description: Template for building production-ready APIs with documentation and testing
+author: Grok-Workflow-Builder-v1
+tags: [api, development, rest, graphql, documentation]
+
+config:
+  max_steps: 10
+  timeout: 2400
+  retry_attempts: 2
+  parallel_execution: true
+
+required_skills:
+  - api-architect
+  - code-review-team
+  - devops-engineer
+  - tech-writer
+  - validation-engineer
+
+steps:
+  - name: define-specification
+    type: thought
+    description: Define API specification
+    agent: api-architect
+    inputs:
+      requirements: "{{api_requirements}}"
+      style: "{{api_style}}"  # rest/graphql/grpc
+    outputs:
+      openapi_spec: openapi.yaml
+      endpoints: []
+
+  - name: design-data-model
+    type: action
+    description: Design data models and schemas
+    agent: api-architect
+    depends_on: [define-specification]
+    inputs:
+      spec: "{{steps.define-specification.outputs.openapi_spec}}"
+    outputs:
+      models: models.py
+      schemas: schemas.json
+      relationships: relationships.json
+
+  - name: implement-backend
+    type: action
+    description: Implement API backend
+    agent: code-review-team
+    depends_on: [design-data-model]
+    inputs:
+      models: "{{steps.design-data-model.outputs.models}}"
+      spec: "{{steps.define-specification.outputs.openapi_spec}}"
+    outputs:
+      api_code: api/
+      controllers: controllers/
+      services: services/
+
+  - name: implement-auth
+    type: action
+    description: Implement authentication and authorization
+    agent: security-auditor
+    depends_on: [implement-backend]
+    inputs:
+      api: "{{steps.implement-backend.outputs.api_code}}"
+      auth_requirements: "{{auth_requirements}}"
+    outputs:
+      auth_middleware: auth/
+      security_config: security.yaml
+
+  - name: write-unit-tests
+    type: action
+    description: Write unit tests for API
+    agent: validation-engineer
+    depends_on: [implement-backend]
+    inputs:
+      api: "{{steps.implement-backend.outputs.api_code}}"
+    outputs:
+      unit_tests: tests/unit/
+      coverage_target: 85
+
+  - name: setup-infrastructure
+    type: action
+    description: Set up deployment infrastructure
+    agent: devops-engineer
+    depends_on: [implement-auth]
+    inputs:
+      config: "{{steps.implement-auth.outputs.security_config}}"
+    outputs:
+      dockerfile: Dockerfile
+      docker_compose: docker-compose.yaml
+      kubernetes: k8s/
+
+  - name: setup-ci-cd
+    type: action
+    description: Set up CI/CD pipeline
+    agent: devops-engineer
+    depends_on: [write-unit-tests, setup-infrastructure]
+    inputs:
+      tests: "{{steps.write-unit-tests.outputs.unit_tests}}"
+      infra: "{{steps.setup-infrastructure.outputs.kubernetes}}"
+    outputs:
+      github_actions: .github/workflows/api-ci.yaml
+      test_commands: []
+
+  - name: generate-documentation
+    type: action
+    description: Generate API documentation
+    agent: tech-writer
+    depends_on: [define-specification]
+    inputs:
+      spec: "{{steps.define-specification.outputs.openapi_spec}}"
+      examples: "{{user_examples}}"
+    outputs:
+      docs: docs/
+      api_reference: API_REFERENCE.md
+      quickstart: QUICKSTART.md
+
+  - name: integration-testing
+    type: action
+    description: Run integration tests
+    agent: validation-engineer
+    depends_on: [implement-backend, write-unit-tests]
+    inputs:
+      api: "{{steps.implement-backend.outputs.api_code}}"
+      tests: "{{steps.write-unit-tests.outputs.unit_tests}}"
+    outputs:
+      integration_tests: tests/integration/
+      test_results: results.json
+      pass_rate: 98%
+
+guardrails:
+  - security_first: true
+  - documentation_required: true
+  - test_coverage_minimum: 85
+  - breaking_changes_versioned: true
+
+success_criteria:
+  - api_spec_approved: true
+  - tests_passing: true
+  - security_review_passed: true
+  - documentation_complete: true
+
+error_handling:
+  max_retries: 2
+  fallback_strategies:
+    - simplify_api
+    - reduce_endpoints
+    - use_framework_defaults
+  escalation_conditions:
+    - specification_conflicts
+    - security_issues_found
+    - performance_requirements_unmet
