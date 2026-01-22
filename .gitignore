@@ -61,6 +61,7 @@ credentials/
 private/
 .local/
 
+# still reflecting 
 build-plan.md
 build-prompt.md
 talk.md
