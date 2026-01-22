@@ -1,0 +1,53 @@
+name: Automated Code Review Pipeline
+version: 1.0.0
+description: Automated code review with linting, security scan, and quality gates
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_push: [main, develop]
+
+guards:
+  - require_no_conflicts
+  - require_tests_passed
+
+steps:
+  - name: checkout
+    action: git.checkout
+    outputs: [commit, branch]
+
+  - name: detect-language
+    action: analyzer.detect_language
+    needs: [checkout]
+    outputs: [language, files_changed]
+
+  - name: run-linter
+    action: linter.run
+    needs: [detect-language]
+    outputs: [lint_report, lint_passed]
+    params:
+      strict_mode: true
+
+  - name: security-scan
+    action: security.scan
+    needs: [detect-language]
+    outputs: [vulnerabilities, security_score]
+    params:
+      scan_level: thorough
+
+  - name: complexity-analysis
+    action: analyzer.measure_complexity
+    needs: [detect-language]
+    outputs: [complexity_report, complexity_score]
+
+  - name: generate-report
+    action: reporter.generate_review
+    needs: [run-linter, security-scan, complexity-analysis]
+    outputs: [review_report]
+
+  - name: post-comment
+    action: git.post_review_comment
+    needs: [generate-report]
+    params:
+      report: "{{outputs.generate-report.review_report}}"

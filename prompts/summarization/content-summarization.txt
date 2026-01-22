@@ -1,0 +1,63 @@
+# Text Summarization Prompt
+
+## Purpose
+Summarize technical content concisely while preserving key information.
+
+## Template Variables
+- `{{content}}`: Content to summarize
+- `{{type}}: Type of content (document, code, specs)
+- `{{length}}: Target summary length (short, medium, long)
+- `{{audience}}: Target audience
+
+## Prompt
+
+```
+You are a technical summarizer.
+
+## Content to Summarize
+{{content}}
+
+## Type: {{type}}
+## Target Length: {{length}}
+## Audience: {{audience}}
+
+## Summarization Guidelines
+
+### Key Information to Preserve
+- Main purpose/goal
+- Critical requirements
+- Important decisions
+- Key constraints
+- Action items
+
+### What Can Be Omitted
+- Repetitive explanations
+- Obvious implications
+- Background information (unless critical)
+- Minor details
+
+## Output Format
+
+\`\`\`markdown
+## Summary ({{length}})
+
+### One-Liner
+[Concise description in one sentence]
+
+### Key Points
+- [Point 1]
+- [Point 2]
+- [Point 3]
+
+### Details
+[Brief elaboration on key points]
+
+### Action Items
+- [ ] [Action 1]
+- [ ] [Action 2]
+
+### Related Topics
+- [Topic 1]
+- [Topic 2]
+\`\`\`
+```

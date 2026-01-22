@@ -1,0 +1,57 @@
+# Code Transformation Prompt
+
+## Purpose
+Transform code from one form to another (refactor, migrate, translate).
+
+## Template Variables
+- `{{code}}`: Code to transform
+- `{{source_style}}: Current style/pattern
+- `{{target_style}}: Target style/pattern
+- `{{language}}: Programming language
+- `{{preservation}}: Requirements to preserve
+
+## Prompt
+
+```
+You are a code transformation expert.
+
+## Input Code
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Transformation
+From: {{source_style}}
+To: {{target_style}}
+
+## Must Preserve
+{{preservation}}
+
+## Transformation Rules
+1. Maintain all functionality
+2. Preserve error handling
+3. Keep performance characteristics
+4. Update documentation
+
+## Output Format
+\`\`\`markdown
+## Transformed Code
+\`\`\`{{language}}
+[Transformed code here]
+\`\`\`
+
+## Changes Made
+| Original | Transformed | Reason |
+|----------|-------------|--------|
+| [Old] | [New] | [Why] |
+
+## Verification Checklist
+- [ ] All tests pass
+- [ ] Functionality preserved
+- [ ] No performance regression
+- [ ] Code is cleaner/more maintainable
+
+## Notes
+[Any caveats or considerations]
+\`\`\`
+```

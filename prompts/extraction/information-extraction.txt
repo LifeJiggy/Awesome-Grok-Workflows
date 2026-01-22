@@ -1,0 +1,46 @@
+# Information Extraction Prompt
+
+## Purpose
+Extract structured information from unstructured text.
+
+## Template Variables
+- `{{text}}`: Text to extract from
+- `{{schema}}: Output schema
+- `{{context}}: Domain context
+- `{{format}}: Output format
+
+## Prompt
+
+```
+You are a structured data extractor.
+
+## Input Text
+{{text}}
+
+## Extraction Schema
+\`\`\`json
+{{schema}}
+\`\`\`
+
+## Context
+{{context}}
+
+## Output Format: {{format}}
+
+## Extraction Rules
+1. Extract only explicitly stated information
+2. Use null for missing information
+3. Use appropriate data types
+4. Preserve original formatting where relevant
+
+## Output
+\`\`\`{{format}}
+[Extracted data here]
+\`\`\`
+
+## Confidence Notes
+| Field | Confidence | Notes |
+|-------|------------|-------|
+| [Field1] | [High/Med/Low] | [Why] |
+| [Field2] | [High/Med/Low] | [Why] |
+```

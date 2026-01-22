@@ -1,0 +1,77 @@
+# Code Evaluation Prompt
+
+## Purpose
+Evaluate code against specific criteria and standards.
+
+## Template Variables
+- `{{code}}`: Code to evaluate
+- `{{criteria}}`: Evaluation criteria
+- `{{standards}}: Reference standards or style guides
+- `{{threshold}}: Pass/fail threshold
+
+## Prompt
+
+```
+You are a code quality evaluator.
+
+## Code Under Review
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Evaluation Criteria
+{{criteria}}
+
+## Reference Standards
+{{standards}}
+
+## Scoring Rubric
+
+| Criterion | Weight | Score (1-5) | Notes |
+|-----------|--------|-------------|-------|
+| Correctness | 30% | | |
+| Security | 25% | | |
+| Performance | 15% | | |
+| Maintainability | 20% | | |
+| Style | 10% | | |
+
+## Threshold: {{threshold}}
+
+## Evaluation Process
+1. Check each criterion against the code
+2. Assign scores from 1-5 (1=poor, 5=excellent)
+3. Calculate weighted average
+4. Determine pass/fail
+
+## Output Format
+\`\`\`markdown
+## Evaluation Result: [PASS/FAIL]
+
+## Detailed Scores
+
+### Correctness: [X]/5
+- [Evidence of correctness or issues]
+
+### Security: [X]/5
+- [Security posture assessment]
+
+### Performance: [X]/5
+- [Performance characteristics]
+
+### Maintainability: [X]/5
+- [Code maintainability factors]
+
+### Style: [X]/5
+- [Code style compliance]
+
+## Weighted Score: [X]%
+
+## Pass/Fail Justification
+[Why it passed or failed]
+
+## Recommendations for Improvement
+1. [Priority 1]
+2. [Priority 2]
+3. [Priority 3]
+\`\`\`
+```

@@ -1,0 +1,48 @@
+# Code Generation Prompt
+
+## Purpose
+Generate production-ready code based on requirements.
+
+## Template Variables
+- `{{requirement}}`: Functional requirement
+- `{{language}}`: Target language
+- `{{framework}}: Framework to use
+- `{{constraints}}: Technical constraints
+- `{{examples}}: Example inputs/outputs
+
+## Prompt
+
+```
+You are an expert {{language}} developer specializing in {{framework}}.
+
+## Task
+Generate code to fulfill this requirement:
+{{requirement}}
+
+## Constraints
+{{constraints}}
+
+## Requirements
+1. Production-ready code (not prototype)
+2. Comprehensive error handling
+3. Type safety (where applicable)
+4. Logging and monitoring
+5. Unit tests included
+
+## Examples
+{{examples}}
+
+## Output Format
+Provide the solution as:
+
+1. **Implementation** (\`\`\`{{language}} ... \`\`\`)
+2. **Tests** (\`\`\`{{language}} ... \`\`\`)
+3. **Usage Example**
+
+## Code Standards
+- Follow {{language}} best practices
+- Use meaningful names
+- Add inline comments
+- Handle edge cases
+- Include docstrings
+```

@@ -1,0 +1,58 @@
+name: Automated Testing Pipeline
+version: 1.0.0
+description: Comprehensive test execution pipeline with multiple test types
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_push: [main]
+
+guards:
+  - require_code_coverage_above: 80
+
+steps:
+  - name: checkout
+    action: git.checkout
+    outputs: [commit]
+
+  - name: install-dependencies
+    action: package.install
+    needs: [checkout]
+    outputs: [dependencies_installed]
+
+  - name: run-unit-tests
+    action: test.run_unit
+    needs: [install-dependencies]
+    outputs: [unit_results, unit_coverage]
+
+  - name: run-integration-tests
+    action: test.run_integration
+    needs: [install-dependencies]
+    outputs: [integration_results, integration_coverage]
+
+  - name: run-e2e-tests
+    action: test.run_e2e
+    needs: [install-dependencies]
+    outputs: [e2e_results, e2e_coverage]
+
+  - name: run-security-tests
+    action: test.run_security
+    needs: [install-dependencies]
+    outputs: [security_results, vulnerability_count]
+
+  - name: run-performance-tests
+    action: test.run_performance
+    needs: [install-dependencies]
+    outputs: [performance_results, benchmark_data]
+
+  - name: generate-test-report
+    action: reporter.generate_test_report
+    needs: [run-unit-tests, run-integration-tests, run-e2e-tests, run-security-tests, run-performance-tests]
+    outputs: [test_report, coverage_badge]
+
+  - name: publish-results
+    action: ci.publish_results
+    needs: [generate-test-report]
+    params:
+      report: "{{outputs.generate-test-report.test_report}}"

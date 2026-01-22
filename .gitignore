@@ -1,7 +1,6 @@
 # Dependencies
 venv/
 env/
-.venv/
 .env
 .env.local
 
@@ -61,3 +60,13 @@ secrets/
 credentials/
 private/
 .local/
+
+build-plan.md
+build-prompt.md
+talk.md
+file-structure.md
+
+# Workflow outputs
+reports/
+*.output/
+*.artifacts/

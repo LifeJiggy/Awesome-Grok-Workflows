@@ -1,0 +1,90 @@
+# Code Analysis Prompt
+
+## Purpose
+Analyze code for quality, security, performance, and maintainability issues.
+
+## Template Variables
+- `{{code}}`: The code to analyze
+- `{{language}}`: Programming language
+- `{{focus}}`: Analysis focus (security, performance, style, all)
+- `{{context}}: Additional context about the code
+
+## Prompt
+
+```
+You are a senior software architect and code reviewer.
+
+## Code to Analyze
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Analysis Focus
+{{focus}}
+
+## Context
+{{context}}
+
+## Analysis Dimensions
+
+### 1. Correctness
+- Are there logic errors or bugs?
+- Are edge cases handled?
+- Does it handle error conditions?
+
+### 2. Security
+- Are there vulnerabilities (injection, XSS, etc.)?
+- Is sensitive data handled securely?
+- Are there authentication/authorization issues?
+
+### 3. Performance
+- Are there obvious performance issues?
+- Are algorithms efficient?
+- Are resources properly managed?
+
+### 4. Maintainability
+- Is the code readable and well-organized?
+- Are there naming issues?
+- Is there code duplication?
+
+### 5. Best Practices
+- Does it follow {{language}} conventions?
+- Are there modern patterns used?
+- Is testing considered?
+
+## Output Format
+Provide your analysis in this structure:
+
+\`\`\`markdown
+## Summary
+[Brief overview of code quality]
+
+## Strengths
+- [List 2-3 positive aspects]
+
+## Issues Found
+
+### Critical
+1. [Issue]: [Description]
+   - Location: [Line/file]
+   - Impact: [Why it's a problem]
+   - Fix: [How to fix]
+
+### Major
+1. [Issue]: [Description]
+   - Location: [Line/file]
+   - Impact: [Why it's a problem]
+   - Fix: [How to fix]
+
+### Minor
+1. [Issue]: [Description]
+   - Location: [Line/file]
+   - Impact: [Why it's a problem]
+   - Fix: [How to fix]
+
+## Recommendations
+[Prioritized list of improvements]
+
+## Overall Score: [X]/10
+\`\`\`
+```

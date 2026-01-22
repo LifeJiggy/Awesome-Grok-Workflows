@@ -1,0 +1,49 @@
+name: Infrastructure Monitoring Setup
+version: 1.0.0
+description: Set up comprehensive monitoring for infrastructure and applications
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_manual
+  - on_deployment
+
+steps:
+  - name: inventory-resources
+    action: cloud.list_resources
+    outputs: [servers, databases, services, load_balancers]
+
+  - name: configure-metrics
+    action: monitoring.setup_metrics
+    needs: [inventory-resources]
+    outputs: [metric_configs, dashboard_links]
+
+  - name: configure-logging
+    action: monitoring.setup_logging
+    needs: [inventory-resources]
+    outputs: [log_configs, log_aggregation_status]
+
+  - name: setup-alerts
+    action: monitoring.configure_alerts
+    needs: [configure-metrics]
+    outputs: [alert_rules, notification_channels]
+
+  - name: configure-tracing
+    action: monitoring.setup_tracing
+    needs: [inventory-resources]
+    outputs: [tracing_config, trace_storage]
+
+  - name: create-dashboards
+    action: monitoring.create_dashboards
+    needs: [configure-metrics, configure-logging, configure-tracing]
+    outputs: [dashboard_urls]
+
+  - name: test-alerts
+    action: monitoring.test_alerts
+    needs: [setup-alerts]
+    outputs: [alert_test_results]
+
+  - name: generate-runbook
+    action: documentation.create_runbook
+    needs: [create-dashboards, setup-alerts]
+    outputs: [runbook_link]

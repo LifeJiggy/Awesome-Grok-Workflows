@@ -1,0 +1,59 @@
+name: Security Audit Workflow
+version: 1.0.0
+description: Comprehensive security audit for applications and infrastructure
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 0 * * 0"  # Weekly on Sunday
+  - on_manual
+
+guards:
+  - require_production_access
+
+steps:
+  - name: collect-scope
+    action: security.define_scope
+    outputs: [target_systems, scope_boundaries]
+
+  - name: dependency-audit
+    action: security.audit_dependencies
+    needs: [collect-scope]
+    outputs: [vulnerable_deps, license_issues]
+
+  - name: secret-scan
+    action: security.scan_secrets
+    needs: [collect-scope]
+    outputs: [secrets_found, exposure_risk]
+
+  - name: config-review
+    action: security.review_config
+    needs: [collect-scope]
+    outputs: [config_issues, hardcoded_secrets]
+
+  - name: vulnerability-scan
+    action: security.scan_vulnerabilities
+    needs: [collect-scope]
+    outputs: [vulnerabilities, severity_breakdown]
+
+  - name: penetration-test
+    action: security.penetration_test
+    needs: [collect-scope]
+    outputs: [exploits_found, attack_vectors]
+
+  - name: compliance-check
+    action: security.check_compliance
+    needs: [collect-scope]
+    outputs: [compliance_gaps, requirements_status]
+
+  - name: generate-audit-report
+    action: reporter.generate_security_audit
+    needs: [dependency-audit, secret-scan, config-review, vulnerability-scan, penetration-test, compliance-check]
+    outputs: [audit_document]
+
+  - name: create-tickets
+    action: tracker.create_issues
+    needs: [generate-audit-report]
+    params:
+      severity_threshold: high

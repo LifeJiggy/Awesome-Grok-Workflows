@@ -1,0 +1,67 @@
+name: Infrastructure as Code Deployment
+version: 1.0.0
+description: Deploy and manage infrastructure using IaC principles
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_push: [main]
+  - on_manual
+
+guards:
+  - require_terraform_validated
+  - require_approval_for_production
+
+steps:
+  - name: checkout-terraform
+    action: git.checkout
+    outputs: [commit]
+
+  - name: validate-terraform
+    action: terraform.validate
+    needs: [checkout-terraform]
+    outputs: [validation_result, plan_output]
+
+  - name: check-compliance
+    action: security.check_terraform_compliance
+    needs: [validate-terraform]
+    outputs: [compliance_issues, policy_status]
+
+  - name: plan-infrastructure
+    action: terraform.plan
+    needs: [validate-terraform, check-compliance]
+    outputs: [execution_plan, resource_changes]
+
+  - name: preview-changes
+    action: terraform.show_plan
+    needs: [plan-infrastructure]
+    outputs: [plan_summary]
+
+  - name: approve-changes
+    action: workflow.require_approval
+    needs: [preview-changes]
+    params:
+      required_approvers: 1
+      environment: "{{inputs.environment}}"
+
+  - name: apply-infrastructure
+    action: terraform.apply
+    needs: [approve-changes]
+    outputs: [applied_resources, apply_output]
+
+  - name: run-smoke-tests
+    action: test.run_smoke
+    needs: [apply-infrastructure]
+    outputs: [smoke_test_results]
+
+  - name: update-documentation
+    action: documentation.update_infra_docs
+    needs: [apply-infrastructure]
+    outputs: [doc_changes]
+
+  - name: notify-complete
+    action: notification.send
+    needs: [run-smoke-tests, update-documentation]
+    params:
+      channel: "{{inputs.notification_channel}}"

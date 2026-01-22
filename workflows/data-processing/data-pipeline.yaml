@@ -1,0 +1,59 @@
+name: Data Processing Pipeline
+version: 1.0.0
+description: Extract, transform, and load data with quality validation
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 */4 * * *"  # Every 4 hours
+  - on_manual
+
+steps:
+  - name: extract-data
+    action: data.extract
+    outputs: [raw_data, record_count]
+    params:
+      source: "{{inputs.data_source}}"
+
+  - name: validate-schema
+    action: data.validate_schema
+    needs: [extract-data]
+    outputs: [schema_valid, schema_issues]
+
+  - name: clean-data
+    action: data.clean
+    needs: [extract-data]
+    outputs: [clean_data, cleaned_count, issues_log]
+
+  - name: transform-data
+    action: data.transform
+    needs: [clean-data]
+    outputs: [transformed_data, transformations_applied]
+
+  - name: enrich-data
+    action: data.enrich
+    needs: [transform-data]
+    outputs: [enriched_data, enrichment_sources]
+
+  - name: aggregate-data
+    action: data.aggregate
+    needs: [enriched-data]
+    outputs: [aggregated_data, metrics]
+
+  - name: validate-quality
+    action: data.validate_quality
+    needs: [aggregate-data]
+    outputs: [quality_score, quality_issues, data_profiling]
+
+  - name: load-data
+    action: data.load
+    needs: [validate-quality]
+    outputs: [loaded_records, target_system]
+    params:
+      target: "{{inputs.target}}"
+
+  - name: generate-data-report
+    action: reporter.generate_data_report
+    needs: [load-data]
+    outputs: [pipeline_report, data_lineage]
