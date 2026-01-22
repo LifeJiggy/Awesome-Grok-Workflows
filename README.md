@@ -52,37 +52,61 @@ python scripts/run-workflow.py \
 
 ```
 grok-workflows-rules/
-├── workflows/                     # Core: End-to-end composable workflows
-│   ├── planning/                  # High-level planners
-│   ├── domain-specific/           # Tie into skills domains
-│   ├── patterns/                  # Reusable sub-patterns
-│   └── templates/                 # Workflow starters
-├── rules/                         # Guardrails, style guides, safety/compliance (10+ rules)
+├── workflows/                     # 10 folders, 55+ workflows
+│   ├── planning/                  # High-level planners (5 files)
+│   ├── domain-specific/           # Domain-specific workflows (6 files)
+│   ├── patterns/                  # Reusable patterns (5 files)
+│   ├── templates/                 # Workflow starters (6 files)
+│   ├── automation/                # Task automation workflows (5 files)
+│   ├── data-processing/           # ETL and data pipelines (5 files)
+│   ├── infrastructure/            # IaC and infra workflows (5 files)
+│   ├── monitoring/                # Observability workflows (5 files)
+│   ├── security/                  # Security workflows (5 files)
+│   └── testing/                   # Test execution workflows (5 files)
+├── rules/                         # 10 folders, 64+ rules
 │   ├── core-rules/                # Universal Grok rules (10 files)
-│   ├── domain-rules/              # Per-domain rules (7 files)
-│   └── agent-rules/               # Per-agent type (4 files)
-├── prompts/                       # Versioned, battle-tested prompts (10+ prompts)
-│   ├── system/                    # Base system prompts (2 files)
-│   ├── few-shot/                  # Examples for better consistency (7 files)
-│   └── templates/                 # Prompt builders (6 files)
+│   ├── domain-rules/              # Per-domain rules (8 files)
+│   ├── agent-rules/               # Per-agent type rules (4 files)
+│   ├── architecture-rules/        # Software architecture (6 files)
+│   ├── documentation-rules/       # Documentation standards (6 files)
+│   ├── ethics-rules/              # AI ethics and compliance (6 files)
+│   ├── performance-rules/         # Performance optimization (5 files)
+│   ├── security-rules/            # Security guidelines (5 files)
+│   ├── style-rules/               # Code style guides (7 files)
+│   └── testing-rules/             # Testing best practices (7 files)
+├── prompts/                       # 10 folders, 62+ prompts
+│   ├── system/                    # Base system prompts (4 files)
+│   ├── few-shot/                  # Examples for consistency (7 files)
+│   ├── templates/                 # Jinja2 prompt templates (9 files)
+│   ├── analysis/                  # Analysis prompts (7 files)
+│   ├── classification/            # Classification prompts (6 files)
+│   ├── evaluation/                # Evaluation prompts (6 files)
+│   ├── extraction/                # Data extraction prompts (5 files)
+│   ├── generation/                # Code/text generation (6 files)
+│   ├── summarization/             # Summarization prompts (5 files)
+│   └── transformation/            # Transformation prompts (6 files)
 ├── agents/                        # Lightweight agent configs
 ├── .github/workflows/             # Production CI/CD
 ├── docs/                          # Human + agent-readable docs
-├── scripts/                       # Automation helpers (8 scripts)
+│   └── examples/                  # 5 example documents
+├── scripts/                       # 8 automation scripts
 ├── tests/                         # Production-grade validation
-├── templates/                     # General starters (10 templates)
+├── templates/                     # 10+ general templates
 ├── README.md                      # This file
 ├── CONTRIBUTING.md                # Contribution guidelines
-└── file-structure.md              # Self-documenting layout
+└── LICENSE                        # MIT License
 ```
 
-## 📖 Documentation
+## 📁 Examples (docs/examples/)
 
-- **[Architecture](docs/architecture.md)** — How workflows compose with skills
-- **[How to Contribute](docs/how-to-contribute.md)** — Adding new workflows
-- **[Best Practices](docs/best-practices.md)** — Prompt eng + workflow design tips
-- **[Examples](docs/examples/)** — Traces, success/failure cases
-- **[Build Prompt](build-prompt.md)** — Meta-prompt for building new workflows
+Real-world traces and use cases:
+
+1. **[Workflow Execution Trace](docs/examples/workflow-execution.md)** — Complete CI/CD pipeline execution with metrics
+2. **[Failure Handling](docs/examples/workflow-failure.md)** — Debugging and recovery from workflow failures
+3. **[Rule Application](docs/examples/rule-application.md)** — Applying multiple rules to improve code
+4. **[Prompt Engineering](docs/examples/prompt-engineering.md)** — Effective prompt structures and templates
+5. **[Grok Personality in Action](docs/examples/grok-personality.md)** — How Grok's traits manifest in responses
+6. **[Multi-Agent Orchestration](docs/examples/multi-agent-orchestration.md)** — Coordinating multiple agents for complex tasks
 
 ## 🎯 Featured Workflows
 
