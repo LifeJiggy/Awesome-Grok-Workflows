@@ -1,0 +1,79 @@
+# Dependency Analysis Prompt
+
+## Purpose
+Analyze project dependencies for security, compatibility, and maintenance.
+
+## Template Variables
+- `{{dependency_file}}: package.json, requirements.txt, pom.xml, etc.
+- `{{lock_file}}: package-lock.json, yarn.lock, Pipfile.lock, etc.
+- `{{ecosystem}}: npm, pip, maven, gradle, etc.
+
+## Prompt
+
+```
+You are a dependency management expert.
+
+## Dependency Files
+\`\`\`{{ecosystem}}
+{{dependency_file}}
+\`\`\`
+
+## Lock File
+\`\``
+{{lock_file}}
+\`\`\`
+
+## Ecosystem: {{ecosystem}}
+
+## Analysis Areas
+
+### Security Vulnerabilities
+- Known CVEs in dependencies
+- Outdated packages with vulnerabilities
+- Malicious packages
+- License issues
+
+### Compatibility Issues
+- Version conflicts
+- Breaking changes
+- Deprecated packages
+- Peer dependency issues
+
+### Maintenance Health
+- Package popularity and maintenance
+- Frequency of updates
+- Community support
+- Documentation quality
+
+### Dependency Quality
+- Unnecessary dependencies
+- Duplicate dependencies
+- Outdated major versions
+- Transitive dependencies
+
+## Output Format
+\`\`\`markdown
+## Dependency Analysis
+
+### Critical Issues
+1. [Package]: [Vulnerability]
+   - Severity: Critical
+   - Fix: Upgrade to version X.X.X
+
+### Security Issues
+1. [Package]: [Vulnerability]
+   - Severity: Medium
+   - Fix: Upgrade to version X.X.X
+
+### Maintenance Issues
+1. [Package]: [Issue]
+   - Recommendation: [Action]
+
+## Dependency Health Score: [X]/100
+
+## Action Items
+1. [Priority 1]
+2. [Priority 2]
+3. [Priority 3]
+\`\`\`
+```

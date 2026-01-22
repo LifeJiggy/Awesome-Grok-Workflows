@@ -1,0 +1,72 @@
+name: Compliance Audit Workflow
+version: 1.0.0
+description: Conduct compliance audits against security frameworks
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 0 1 * *"  # Monthly on the 1st
+  - on_manual
+
+guards:
+  - require_compliance_team_approval
+
+steps:
+  - name: define-audit-scope
+    action: compliance.define_scope
+    params:
+      frameworks: ["SOC2", "ISO27001", "GDPR"]
+    outputs: [audit_scope, control_framework]
+
+  - name: collect-evidence
+    action: compliance.collect_evidence
+    needs: [define-audit-scope]
+    params:
+      controls: "{{outputs.define-audit-scope.control_framework}}"
+    outputs: [evidence_collection, evidence_status]
+
+  - name: assess-controls
+    action: compliance.assess_controls
+    needs: [collect-evidence]
+    params:
+      framework: "SOC2"
+    outputs: [control_assessments, gaps_identified]
+
+  - name: run-automated-checks
+    action: compliance.automated_checks
+    needs: [define-audit-scope]
+    params:
+      checks: ["access_controls", "encryption", "logging", "backup"]
+    outputs: [automated_results, findings]
+
+  - name: interview-stakeholders
+    action: compliance.conduct_interviews
+    needs: [define-audit-scope]
+    params:
+      departments: ["IT", "Security", "Operations"]
+    outputs: [interview_notes, observations]
+
+  - name: aggregate-findings
+    action: compliance.aggregate_findings
+    needs: [assess-controls, run-automated-checks, interview-stakeholders]
+    outputs: [all_findings, risk_ratings]
+
+  - name: generate-report
+    action: compliance.generate_report
+    needs: [aggregate-findings]
+    params:
+      format: "executive_summary"
+    outputs: [compliance_report, recommendation_report]
+
+  - name: create-remediation-plan
+    action: compliance.create_remediation_plan
+    needs: [generate-report]
+    params:
+      priority_threshold: high
+    outputs: [remediation_plan, timeline]
+
+  - name: schedule-followup
+    action: compliance.schedule_followup
+    needs: [create-remediation-plan]
+    outputs: [followup_date, reminders_configured]

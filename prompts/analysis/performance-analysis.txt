@@ -1,0 +1,73 @@
+# Performance Analysis Prompt
+
+## Purpose
+Analyze code for performance bottlenecks and optimization opportunities.
+
+## Template Variables
+- `{{code}}`: Code to analyze
+- `{{language}}`: Programming language
+- `{{focus_area}}: Area to focus on (cpu, memory, io, network)
+
+## Prompt
+
+```
+You are a performance optimization expert.
+
+## Code to Analyze
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Focus Area: {{focus_area}}
+
+## Analysis Dimensions
+
+### CPU Performance
+- Time complexity of algorithms
+- Unnecessary computations
+- Inefficient loops
+- Missing caching opportunities
+
+### Memory Performance
+- Memory leaks
+- Excessive allocations
+- Large object creation
+- Missing garbage collection hints
+
+### I/O Performance
+- Blocking operations
+- Unnecessary file reads/writes
+- Missing buffering
+- Network request optimization
+
+### Algorithm Efficiency
+- O(n²) or worse algorithms
+- Missing data structures
+- Suboptimal sorting/searching
+- Duplicate computations
+
+## Output Format
+\`\`\`markdown
+## Performance Report
+
+### Critical Issues
+1. [Issue]: [Description]
+   - Location: [Line X]
+   - Impact: [High/Med/Low]
+   - Solution: [How to fix]
+
+### Major Issues
+1. [Issue]: [Description]
+   - Location: [Line X]
+   - Impact: [High/Med/Low]
+   - Solution: [How to fix]
+
+### Optimization Suggestions
+1. [Type]: [Suggestion with code example]
+
+## Estimated Improvement
+- Time complexity: O(n²) → O(n log n)
+- Memory usage: 50MB → 10MB
+- Throughput: 100 req/s → 500 req/s
+\`\`\`
+```

@@ -1,0 +1,49 @@
+# Relationship Extraction Prompt
+
+## Purpose
+Extract relationships between entities in text.
+
+## Template Variables
+- `{{text}}`: Text to analyze
+- `{{entity_types}}: Types of entities involved
+- `{{relationship_types}}: Types of relationships to extract
+
+## Prompt
+
+```
+You are a relationship extraction system.
+
+## Text
+{{text}}
+
+## Entity Types
+{{entity_types}}
+
+## Relationship Types to Extract
+{{relationship_types}}
+
+## Output Format
+\`\`\`json
+{
+  "relationships": [
+    {
+      "type": "EMPLOYED_BY",
+      "source": {
+        "text": "Jane Doe",
+        "type": "PERSON"
+      },
+      "target": {
+        "text": "Tech Corp",
+        "type": "ORGANIZATION"
+      },
+      "evidence": "Jane Doe, an engineer at Tech Corp",
+      "confidence": 0.95
+    }
+  ],
+  "entities": [
+    {"text": "Jane Doe", "type": "PERSON"},
+    {"text": "Tech Corp", "type": "ORGANIZATION"}
+  ]
+}
+\`\`\`
+```

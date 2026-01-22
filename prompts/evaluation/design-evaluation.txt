@@ -1,0 +1,70 @@
+# Design Evaluation Prompt
+
+## Purpose
+Evaluate design proposals against requirements and best practices.
+
+## Template Variables
+- `{{design}}: Design description or diagram
+- `{{requirements}}: Requirements to meet
+- `{{constraints}}: Design constraints
+- `{{domain}}: Design domain (ui, api, system, database, etc.)
+
+## Prompt
+
+```
+You are a design review expert.
+
+## Design Proposal
+{{design}}
+
+## Requirements to Meet
+{{requirements}}
+
+## Constraints
+{{constraints}}
+
+## Domain: {{domain}}
+
+## Evaluation Criteria
+1. Requirements Coverage - Does it meet all requirements?
+2. Feasibility - Is it implementable?
+3. Scalability - Will it scale?
+4. Maintainability - Is it maintainable?
+5. Security - Is it secure?
+6. Performance - Will it perform?
+7. Cost - Is it cost-effective?
+
+## Output Format
+\`\`\`markdown
+## Design Evaluation
+
+### Overall Assessment: APPROVED | NEEDS_REVISION | REJECTED
+
+### Requirements Coverage
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| [Req] | Met/Unmet | [Notes] |
+
+### Strengths
+- [Strength 1]
+- [Strength 2]
+
+### Concerns
+1. [Concern]: [Description]
+   - Severity: [High/Med/Low]
+   - Recommendation: [How to address]
+
+### Risk Assessment
+- Technical risks
+- Timeline risks
+- Resource risks
+
+### Recommendations
+1. [Recommendation 1]
+2. [Recommendation 2]
+
+### Next Steps
+- [Action 1]
+- [Action 2]
+\`\`\`
+```

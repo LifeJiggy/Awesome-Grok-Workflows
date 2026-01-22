@@ -1,0 +1,88 @@
+name: Backup and Recovery Workflow
+version: 1.0.0
+description: Automated backup scheduling and disaster recovery
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 2 * * *"  # Daily at 2 AM
+  - on_manual
+
+guards:
+  - require_backup_confirmation
+
+steps:
+  - name: inventory-resources
+    action: backup.list_resources
+    outputs: [resources_to_backup]
+
+  - name: pre-backup-checks
+    action: backup.pre_check
+    needs: [inventory-resources]
+    outputs: [check_results, ready_for_backup]
+
+  - name: create-database-backup
+    action: backup.database
+    needs: [pre-backup-checks]
+    params:
+      type: full
+      compression: true
+    outputs: [db_backup_path, db_backup_size]
+
+  - name: create-file-backups
+    action: backup.files
+    needs: [pre-backup-checks]
+    params:
+      paths: ["/data", "/configs", "/logs"]
+      incremental: false
+    outputs: [file_backup_paths, file_backup_size]
+
+  - name: create-config-backups
+    action: backup.configs
+    needs: [pre-backup-checks]
+    outputs: [config_backup_path, config_backup_size]
+
+  - name: encrypt-backups
+    action: backup.encrypt
+    needs: [create-database-backup, create-file-backups, create-config-backups]
+    params:
+      algorithm: AES-256
+    outputs: [encrypted_paths, encryption_keys]
+
+  - name: upload-to-storage
+    action: backup.upload_cloud
+    needs: [encrypt-backups]
+    params:
+      provider: s3
+      storage_class: glacier
+    outputs: [storage_urls, upload_status]
+
+  - name: verify-backups
+    action: backup.verify
+    needs: [upload-to-storage]
+    params:
+      check_integrity: true
+      test_restore: false
+    outputs: [verification_result]
+
+  - name: generate-report
+    action: reporter.generate_backup_report
+    needs: [verify-backups]
+    outputs: [backup_report]
+
+  - name: cleanup-old-backups
+    action: backup.cleanup
+    needs: [upload-to-storage]
+    params:
+      retention_days: 30
+      keep_count: 10
+    outputs: [cleanup_report]
+
+  - name: alert-on-failure
+    action: notification.alert
+    needs: [verify-backups]
+    condition: "outputs.verification-result.success == false"
+    params:
+      severity: critical
+      message: "Backup verification failed"

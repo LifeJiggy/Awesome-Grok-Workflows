@@ -1,0 +1,47 @@
+name: Scheduled Task Runner
+version: 1.0.0
+description: Execute scheduled maintenance and batch tasks
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 * * * *"  # Every hour
+  - on_manual
+
+steps:
+  - name: list-tasks
+    action: scheduler.list_pending
+    outputs: [task_queue]
+
+  - name: priority-tasks
+    action: scheduler.prioritize
+    needs: [list-tasks]
+    outputs: [prioritized_tasks]
+
+  - name: execute-high-priority
+    action: runner.execute_batch
+    needs: [priority-tasks]
+    params:
+      max_tasks: 10
+      priority_threshold: high
+    outputs: [task_results, success_count, failed_count]
+
+  - name: execute-medium-priority
+    action: runner.execute_batch
+    needs: [execute-high-priority]
+    params:
+      max_tasks: 20
+      priority_threshold: medium
+    outputs: [task_results, success_count, failed_count]
+
+  - name: generate-report
+    action: reporter.generate_task_report
+    needs: [execute-high-priority, execute-medium-priority]
+    outputs: [report_document]
+
+  - name: notify-completion
+    action: notification.send_summary
+    needs: [generate-report]
+    params:
+      summary: "{{outputs.generate-report.report_document}}"

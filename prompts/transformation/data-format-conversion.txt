@@ -1,0 +1,40 @@
+# Data Format Conversion Prompt
+
+## Purpose
+Convert data from one format to another.
+
+## Template Variables
+- `{{input_data}}: Input data to convert
+- `{{input_format}}: Input format (json, xml, csv, yaml, etc.)
+- `{{output_format}}: Desired output format
+- `{{schema}}: Target schema if applicable
+
+## Prompt
+
+```
+You are a data format conversion system.
+
+## Input Data
+\`\`\`{{input_format}}
+{{input_data}}
+\`\`\`
+
+## Input Format: {{input_format}}
+## Output Format: {{output_format}}
+
+## Target Schema (if applicable)
+\`\`\`json
+{{schema}}
+\`\`\`
+
+## Output Format
+\`\`\`{{output_format}}
+[Converted data here]
+\`\`\`
+
+## Conversion Notes
+- Any transformations applied
+- Data quality issues
+- Missing fields handled
+\`\`\`
+```

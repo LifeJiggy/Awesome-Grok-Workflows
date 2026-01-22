@@ -1,0 +1,81 @@
+name: Real-Time Stream Processing
+version: 1.0.0
+description: Process data streams in real-time with event handling
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_event: stream.data.ingested
+  - on_schedule:
+      cron: "*/1 * * * *"  # Every minute check
+
+steps:
+  - name: ingest-stream
+    action: stream.ingest
+    params:
+      source: "kafka_events"
+      topic: "user_events"
+    outputs: [events_batch, event_count]
+
+  - name: validate-events
+    action: stream.validate
+    needs: [ingest-stream]
+    params:
+      schema: "user_event_schema"
+    outputs: [valid_events, invalid_events, validation_errors]
+
+  - name: enrich-events
+    action: stream.enrich
+    needs: [validate-events]
+    params:
+      enrichments: ["user_profile", "geolocation", "session_data"]
+    outputs: [enriched_events]
+
+  - name: route-events
+    action: stream.route
+    needs: [enrich-events]
+    params:
+      rules:
+        - condition: "event.type == 'purchase'"
+          destination: "purchase_processor"
+        - condition: "event.type == 'click'"
+          destination: "analytics_pipeline"
+        - condition: "event.type == 'error'"
+          destination: "error_handler"
+    outputs: [routed_events, event_queues]
+
+  - name: process-purchases
+    action: stream.process
+    needs: [route-events]
+    params:
+      consumer_group: "purchase_processor"
+      batch_size: 100
+    outputs: [purchase_results]
+
+  - name: process-analytics
+    action: stream.process
+    needs: [route-events]
+    params:
+      consumer_group: "analytics_pipeline"
+      window: "1m"
+    outputs: [analytics_results]
+
+  - name: handle-errors
+    action: stream.handle_errors
+    needs: [route-events]
+    params:
+      destination: "dead_letter_queue"
+      retry_count: 3
+    outputs: [error_handled, error_count]
+
+  - name: aggregate-metrics
+    action: stream.aggregate_metrics
+    needs: [process-purchases, process-analytics]
+    outputs: [stream_metrics, throughput, latency_p95]
+
+  - name: checkpoint-state
+    action: stream.checkpoint
+    needs: [aggregate-metrics]
+    params:
+      interval: "5m"
+    outputs: [checkpoint_status]

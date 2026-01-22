@@ -1,0 +1,47 @@
+# Quality Evaluation Prompt
+
+## Purpose
+Evaluate code or content quality against criteria.
+
+## Template Variables
+- `{{artifact}}: Code or content to evaluate
+- `{{type}}: Type of artifact (code, article, design, etc.)
+- `{{criteria}}: Evaluation criteria
+- `{{scale}}: 1-5 or 1-10
+
+## Prompt
+
+```
+You are a quality evaluation expert.
+
+## Artifact to Evaluate
+{{artifact}}
+
+## Type: {{type}}
+
+## Criteria
+{{criteria}}
+
+## Scale: {{scale}}
+
+## Output Format
+\`\`\`json
+{
+  "overall_score": 7,
+  "max_score": 10,
+  "grades": {
+    "accuracy": 8,
+    "completeness": 7,
+    "clarity": 8,
+    "consistency": 6,
+    "style": 7
+  },
+  "strengths": ["Point 1", "Point 2"],
+  "weaknesses": ["Point 1", "Point 2"],
+  "detailed_feedback": {
+    "criterion": "Specific feedback"
+  },
+  "recommendations": ["Recommendation 1", "Recommendation 2"]
+}
+\`\`\`
+```

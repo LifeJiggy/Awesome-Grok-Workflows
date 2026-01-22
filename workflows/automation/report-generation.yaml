@@ -1,0 +1,67 @@
+name: Report Generation Pipeline
+version: 1.0.0
+description: Automated report generation from data sources
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 8 * * 1"  # Weekly Monday 8 AM
+  - on_manual
+
+steps:
+  - name: collect-data
+    action: data.query
+    params:
+      source: analytics_db
+      query: "SELECT * FROM metrics WHERE date >= NOW() - INTERVAL '7 days'"
+    outputs: [raw_data]
+
+  - name: process-data
+    action: data.transform
+    needs: [collect-data]
+    params:
+      transformations: ["aggregate", "calculate_percentages", "sort"]
+    outputs: [processed_data]
+
+  - name: generate-charts
+    action: report.create_charts
+    needs: [process-data]
+    params:
+      chart_types: ["line", "bar", "pie"]
+      data: "{{outputs.process-data.processed_data}}"
+    outputs: [chart_images]
+
+  - name: compile-report
+    action: report.compile
+    needs: [process-data, generate-charts]
+    params:
+      template: weekly_summary
+      data: "{{outputs.process-data.processed_data}}"
+      charts: "{{outputs.generate-charts.chart_images}}"
+    outputs: [report_document]
+
+  - name: format-output
+    action: report.format
+    needs: [compile-report]
+    params:
+      format: pdf
+      include_toc: true
+      include_header: true
+    outputs: [final_report]
+
+  - name: upload-report
+    action: storage.upload
+    needs: [format-output]
+    params:
+      path: "/reports/weekly/{{timestamp}}.pdf"
+      content: "{{outputs.format-output.final_report}}"
+    outputs: [report_url]
+
+  - name: distribute-report
+    action: notification.send_report
+    needs: [upload-report]
+    params:
+      recipients: ["team@company.com"]
+      report_url: "{{outputs.upload-report.report_url}}"
+      message: "Weekly report is ready"

@@ -1,0 +1,75 @@
+# Bug Analysis Prompt
+
+## Purpose
+Analyze bug reports and identify root causes.
+
+## Template Variables
+- `{{bug_report}}: Description of the bug
+- `{{code}}: Related code
+- `{{logs}}: Error logs or stack traces
+- `{{steps_to_reproduce`: Steps to reproduce
+
+## Prompt
+
+```
+You are a debugging expert.
+
+## Bug Report
+{{bug_report}}
+
+## Related Code
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Error Logs
+\`\`\`
+{{logs}}
+\`\`\`
+
+## Steps to Reproduce
+{{steps_to_reproduce}}
+
+## Analysis Process
+
+### Root Cause Analysis
+1. Identify the immediate cause
+2. Trace back to the root cause
+3. Identify contributing factors
+
+### Impact Analysis
+- User impact
+- Data impact
+- System impact
+- Business impact
+
+### Fix Strategy
+- Immediate mitigation
+- Short-term fix
+- Long-term solution
+- Prevention measures
+
+## Output Format
+\`\`\`markdown
+## Bug Analysis Report
+
+### Summary
+[Brief description of the bug]
+
+### Root Cause
+[Detailed root cause analysis]
+
+### Contributing Factors
+1. [Factor 1]
+2. [Factor 2]
+
+### Fix Recommendation
+1. Immediate: [Quick fix]
+2. Short-term: [Proper fix]
+3. Long-term: [Architectural fix]
+
+### Prevention
+- [How to prevent in future]
+- [Tests to add]
+\`\`\`
+```

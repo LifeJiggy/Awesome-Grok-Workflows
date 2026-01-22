@@ -1,0 +1,70 @@
+name: Notification Dispatcher
+version: 1.0.0
+description: Multi-channel notification delivery system
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_event: notification.requested
+  - on_manual
+
+steps:
+  - name: receive-notification
+    action: notification.receive
+    outputs: [notification_data, channels, priority]
+
+  - name: validate-content
+    action: notification.validate
+    needs: [receive-notification]
+    params:
+      content: "{{outputs.receive-notification.notification_data}}"
+    outputs: [validation_result]
+
+  - name: prepare-channels
+    action: notification.prepare_channels
+    needs: [receive-notification]
+    params:
+      channels: "{{outputs.receive-notification.channels}}"
+    outputs: [channel_configs]
+
+  - name: send-email
+    action: notification.send_email
+    needs: [validate-content, prepare-channels]
+    params:
+      to: "{{outputs.receive-notification.notification_data.recipients}}"
+      subject: "{{outputs.receive-notification.notification_data.subject}}"
+      body: "{{outputs.receive-notification.notification_data.body}}"
+    outputs: [email_status, delivery_id]
+
+  - name: send-slack
+    action: notification.send_slack
+    needs: [validate-content, prepare-channels]
+    params:
+      channel: "{{outputs.receive-notification.notification_data.slack_channel}}"
+      message: "{{outputs.receive-notification.notification_data.message}}"
+    outputs: [slack_status, delivery_id]
+
+  - name: send-sms
+    action: notification.send_sms
+    needs: [validate-content, prepare-channels]
+    params:
+      phone: "{{outputs.receive-notification.notification_data.phone_numbers}}"
+      message: "{{outputs.receive-notification.notification_data.sms_body}}"
+    condition: "outputs.receive-notification.priority == 'high'"
+    outputs: [sms_status, delivery_id]
+
+  - name: track-delivery
+    action: notification.track_delivery
+    needs: [send-email, send-slack, send-sms]
+    params:
+      email_id: "{{outputs.send-email.delivery_id}}"
+      slack_id: "{{outputs.send-slack.delivery_id}}"
+      sms_id: "{{outputs.send-sms.delivery_id}}"
+    outputs: [delivery_report]
+
+  - name: handle-failures
+    action: notification.handle_failures
+    needs: [track-delivery]
+    params:
+      report: "{{outputs.track-delivery.delivery_report}}"
+    condition: "outputs.track-delivery.delivery_report.failed_count > 0"

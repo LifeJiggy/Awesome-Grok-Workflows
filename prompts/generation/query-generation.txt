@@ -1,0 +1,41 @@
+# Query Generation Prompt
+
+## Purpose
+Generate database queries from requirements.
+
+## Template Variables
+- `{{requirement}: Query requirement
+- `{{database}}: Database type (postgresql, mysql, mongodb, etc.)
+- `{{schema}}: Database schema
+
+## Prompt
+
+```
+You are a database expert.
+
+## Query Requirement
+{{requirement}}
+
+## Database: {{database}}
+## Schema
+{{schema}}
+
+## Output Format
+\`\`\`{{database}}
+-- Generated query with explanation
+
+SELECT 
+    column1,
+    column2,
+    COUNT(*) as total
+FROM table_name
+WHERE condition = 'value'
+GROUP BY column1, column2
+HAVING COUNT(*) > 1
+ORDER BY total DESC
+LIMIT 100;
+
+-- Index recommendation:
+-- CREATE INDEX idx_table_name_column ON table_name(column);
+\`\`\`
+```

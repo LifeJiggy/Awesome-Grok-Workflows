@@ -1,0 +1,85 @@
+name: E2E Test Suite
+version: 1.0.0
+description: End-to-end browser-based testing for critical user journeys
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_release
+  - on_manual
+
+steps:
+  - name: setup-test-env
+    action: environment.setup
+    params:
+      type: e2e_test
+      browser: "chromium"
+    outputs: [env_ready, browser_url]
+
+  - name: setup-test-data
+    action: data.seed_e2e
+    needs: [setup-test-env]
+    params:
+      scenarios: ["happy_path", "edge_cases"]
+    outputs: [test_data_ready]
+
+  - name: run-critical-path-tests
+    action: test.run_e2e
+    needs: [setup-test-data]
+    params:
+      suite: "critical_path"
+      browsers: ["chromium", "firefox"]
+    outputs: [critical_path_results]
+
+  - name: run-checkout-tests
+    action: test.run_e2e
+    needs: [setup-test-data]
+    params:
+      suite: "checkout_flow"
+      retries: 2
+    outputs: [checkout_results]
+
+  - name: run-auth-tests
+    action: test.run_e2e
+    needs: [setup-test-data]
+    params:
+      suite: "authentication"
+    outputs: [auth_results]
+
+  - name: run-payment-tests
+    action: test.run_e2e
+    needs: [setup-test-data]
+    params:
+      suite: "payment_processing"
+    outputs: [payment_results]
+
+  - name: generate-screenshots
+    action: test.capture_screenshots
+    needs: [run-critical-path-tests]
+    params:
+      on_failure: true
+      on_success: false
+    outputs: [failure_screenshots]
+
+  - name: aggregate-results
+    action: test.aggregate_e2e_results
+    needs: [run-critical-path-tests, run-checkout-tests, run-auth-tests, run-payment-tests]
+    outputs: [e2e_summary, pass_rate, total_tests, failed_tests]
+
+  - name: generate-report
+    action: reporter.generate_e2e_report
+    needs: [aggregate-results, generate-screenshots]
+    outputs: [e2e_report]
+
+  - name: upload-artifacts
+    action: ci.upload_artifacts
+    needs: [generate-report, generate-screenshots]
+    params:
+      artifacts: ["screenshots", "videos", "report"]
+    outputs: [artifact_urls]
+
+  - name: cleanup
+    action: environment.cleanup
+    needs: [aggregate-results]
+    outputs: [cleanup_status]

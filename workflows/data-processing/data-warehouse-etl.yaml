@@ -1,0 +1,74 @@
+name: Data Warehouse ETL Pipeline
+version: 1.0.0
+description: Extract, transform, and load data into data warehouse
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 0 * * *"  # Daily midnight
+  - on_manual
+
+steps:
+  - name: extract-from-sources
+    action: etl.extract
+    params:
+      sources: ["crm", "erp", "web_analytics", "support_tickets"]
+    outputs: [raw_data, extraction_stats]
+
+  - name: validate-extracted-data
+    action: etl.validate_raw
+    needs: [extract-from-sources]
+    outputs: [valid_data, validation_errors]
+
+  - name: clean-data
+    action: etl.clean
+    needs: [validate-extracted-data]
+    params:
+      operations: ["deduplicate", "standardize", "handle_missing"]
+    outputs: [cleaned_data, cleaning_stats]
+
+  - name: transform-data
+    action: etl.transform
+    needs: [clean-data]
+    params:
+      transformations: ["aggregate", "enrich", "calculate_metrics"]
+    outputs: [transformed_data, transformation_stats]
+
+  - name: build-dimensions
+    action: etl.build_dimensions
+    needs: [transform-data]
+    params:
+      dimensions: ["dim_customer", "dim_product", "dim_date", "dim_region"]
+    outputs: [dimension_tables]
+
+  - name: build-facts
+    action: etl.build_facts
+    needs: [transform-data]
+    params:
+      facts: ["fact_sales", "fact_visits", "fact_support"]
+    outputs: [fact_tables]
+
+  - name: load-warehouse
+    action: etl.load_warehouse
+    needs: [build-dimensions, build-facts]
+    params:
+      warehouse: "snowflake"
+    outputs: [load_stats, row_counts]
+
+  - name: run-warehouse-tests
+    action: etl.test_warehouse
+    needs: [load-warehouse]
+    params:
+      tests: ["row_counts", " Referential_integrity", "aggregations"]
+    outputs: [test_results]
+
+  - name: update-lineage
+    action: etl.update_lineage
+    needs: [load-warehouse]
+    outputs: [lineage_updated]
+
+  - name: generate-etl-report
+    action: reporter.generate_etl_report
+    needs: [run-warehouse-tests]
+    outputs: [etl_report]

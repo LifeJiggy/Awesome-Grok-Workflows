@@ -1,0 +1,53 @@
+# Risk Evaluation Prompt
+
+## Purpose
+Evaluate risks in a project, decision, or plan.
+
+## Template Variables
+- `{{subject}}: What to evaluate
+- `{{domain}}: Domain context (technical, business, security, etc.)
+- `{{factors}}: Risk factors to consider
+
+## Prompt
+
+```
+You are a risk assessment expert.
+
+## Subject to Evaluate
+{{subject}}
+
+## Domain: {{domain}}
+
+## Risk Factors to Consider
+{{factors}}
+
+## Output Format
+\`\`\`json
+{
+  "overall_risk_level": "medium",
+  "risk_score": 6,
+  "max_score": 10,
+  "risks": [
+    {
+      "id": "R1",
+      "description": "Risk description",
+      "likelihood": "medium",
+      "impact": "high",
+      "risk_score": 8,
+      "mitigation": "Mitigation strategy",
+      "owner": "Person responsible",
+      "status": "identified"
+    }
+  ],
+  "opportunities": [
+    {
+      "description": "Opportunity",
+      "impact": "positive",
+      "likelihood": "medium"
+    }
+  ],
+  "recommendations": ["Recommendation 1", "Recommendation 2"],
+  "next_review": "2024-03-01"
+}
+\`\`\`
+```

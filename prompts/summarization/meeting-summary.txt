@@ -1,0 +1,49 @@
+# Meeting Summary Generation
+
+## Purpose
+Generate summaries from meeting transcripts or notes.
+
+## Template Variables
+- `{{transcript}}: Meeting transcript or notes
+- `{{meeting_type}}: Type of meeting (standup, planning, retro, review)
+- `{{participants}}: List of participants
+
+## Prompt
+
+```
+You are a meeting summarizer.
+
+## Meeting Transcript
+{{transcript}}
+
+## Meeting Type: {{meeting_type}}
+## Participants: {{participants}}
+
+## Output Format
+\`\`\`markdown
+## Meeting Summary: [Date]
+
+### Attendees
+- [List of attendees]
+
+### Key Discussion Points
+1. [Point 1]
+2. [Point 2]
+
+### Decisions Made
+- [Decision 1]
+- [Decision 2]
+
+### Action Items
+| Action | Owner | Due Date |
+|--------|-------|----------|
+| [Task] | [Owner] | [Date] |
+
+### Next Steps
+- [Next step 1]
+- [Next step 2]
+
+### Notes
+[Any additional notes]
+\`\`\`
+```

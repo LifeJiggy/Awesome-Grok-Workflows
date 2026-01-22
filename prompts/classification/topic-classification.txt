@@ -1,0 +1,42 @@
+# Topic Classification Prompt
+
+## Purpose
+Classify text into predefined topic categories.
+
+## Template Variables
+- `{{text}}`: Text to classify
+- `{{categories}}: Comma-separated categories
+- `{{allow_multiple}}: Allow multiple categories (true/false)
+
+## Prompt
+
+```
+You are a topic classification expert.
+
+## Text to Classify
+{{text}}
+
+## Categories
+{{categories}}
+
+## Allow Multiple: {{allow_multiple}}
+
+## Output Format
+\`\`\`json
+{
+  "topics": [
+    {
+      "category": "technology",
+      "confidence": 0.92,
+      "evidence": ["keywords found"]
+    }
+  ],
+  "all_scores": {
+    "technology": 0.92,
+    "politics": 0.15,
+    "sports": 0.05
+  },
+  "reasoning": "Classification explanation"
+}
+\`\`\`
+```

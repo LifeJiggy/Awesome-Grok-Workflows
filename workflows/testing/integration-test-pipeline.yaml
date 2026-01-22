@@ -1,0 +1,78 @@
+name: Integration Test Pipeline
+version: 1.0.0
+description: Comprehensive integration testing for service interactions
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_merge
+  - on_manual
+
+steps:
+  - name: setup-test-env
+    action: environment.setup
+    params:
+      type: integration_test
+      services: ["database", "cache", "message_queue"]
+    outputs: [env_ready]
+
+  - name: seed-test-data
+    action: data.seed
+    needs: [setup-test-env]
+    params:
+      datasets: ["users", "products", "orders"]
+    outputs: [data_seeded]
+
+  - name: run-database-tests
+    action: test.run_db_tests
+    needs: [seed-test-data]
+    params:
+      suite: "integration"
+    outputs: [db_test_results]
+
+  - name: run-api-tests
+    action: test.run_api_tests
+    needs: [seed-test-data]
+    params:
+      suite: "api_integration"
+      base_url: "{{outputs.setup-test-env.service_urls.api}}"
+    outputs: [api_test_results]
+
+  - name: run-cache-tests
+    action: test.run_cache_tests
+    needs: [seed-test-data]
+    params:
+      suite: "cache_integration"
+    outputs: [cache_test_results]
+
+  - name: run-queue-tests
+    action: test.run_queue_tests
+    needs: [seed-test-data]
+    params:
+      suite: "queue_integration"
+    outputs: [queue_test_results]
+
+  - name: run-contract-tests
+    action: test.run_contract_tests
+    needs: [seed-test-data]
+    params:
+      provider: pact
+    outputs: [contract_test_results]
+
+  - name: aggregate-results
+    action: test.aggregate_integration_results
+    needs: [run-database-tests, run-api-tests, run-cache-tests, run-queue-tests, run-contract-tests]
+    outputs: [integration_summary, pass_rate]
+
+  - name: publish-contract-results
+    action: test.publish_contract_results
+    needs: [run-contract-tests]
+    params:
+      provider: pact
+    outputs: [published_url]
+
+  - name: cleanup-test-env
+    action: environment.cleanup
+    needs: [aggregate-results]
+    outputs: [cleanup_status]

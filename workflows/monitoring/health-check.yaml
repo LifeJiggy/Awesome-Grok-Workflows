@@ -1,0 +1,71 @@
+name: Health Check Monitor
+version: 1.0.0
+description: Continuous health monitoring for services and infrastructure
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "*/1 * * * *"  # Every minute
+  - on_manual
+
+steps:
+  - name: list-services
+    action: monitoring.list_services
+    outputs: [services_to_check]
+
+  - name: check-api-health
+    action: monitoring.check_api
+    needs: [list-services]
+    params:
+      timeout: 10
+      expected_status: 200
+    outputs: [api_results, api_uptime]
+
+  - name: check-database-health
+    action: monitoring.check_database
+    needs: [list-services]
+    params:
+      checks: ["connection", "replication", "latency"]
+    outputs: [db_results, db_health]
+
+  - name: check-cache-health
+    action: monitoring.check_cache
+    needs: [list-services]
+    params:
+      checks: ["memory", "hit_rate", "connections"]
+    outputs: [cache_results, cache_health]
+
+  - name: check-queue-health
+    action: monitoring.check_queue
+    needs: [list-services]
+    params:
+      checks: ["message_count", "consumer_lag", "dead_letter"]
+    outputs: [queue_results, queue_health]
+
+  - name: aggregate-health
+    action: monitoring.aggregate_status
+    needs: [check-api-health, check-database-health, check-cache-health, check-queue-health]
+    outputs: [overall_health, service_statuses]
+
+  - name: update-dashboards
+    action: monitoring.update_dashboards
+    needs: [aggregate-health]
+    params:
+      dashboards: ["health_overview", "service_detail"]
+    outputs: [dashboard_updates]
+
+  - name: trigger-alerts
+    action: monitoring.trigger_alerts
+    needs: [aggregate-health]
+    params:
+      down_threshold: 2
+      degraded_threshold: 5
+    outputs: [alerts_triggered]
+
+  - name: log-metrics
+    action: monitoring.log_metrics
+    needs: [aggregate-health]
+    params:
+      metrics: "{{outputs.aggregate-health.service_statuses}}"
+    outputs: [metrics_logged]

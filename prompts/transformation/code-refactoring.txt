@@ -1,0 +1,60 @@
+# Code Refactoring Prompt
+
+## Purpose
+Refactor code to improve quality while maintaining functionality.
+
+## Template Variables
+- `{{code}}`: Code to refactor
+- `{{language}}: Programming language
+- `{{goals}}: Refactoring goals (readability, performance, testability)
+- `{{constraints}}: Any constraints to follow
+
+## Prompt
+
+```
+You are a code refactoring expert.
+
+## Code to Refactor
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Refactoring Goals
+{{goals}}
+
+## Constraints
+{{constraints}}
+
+## Output Format
+\`\`\`markdown
+## Refactoring Plan
+
+### Before
+\`\`\`{{language}}
+[Original code]
+\`\`\`
+
+### After
+\`\`\`{{language}}
+[Refactored code]
+\`\`\`
+
+### Changes Made
+| Original | Refactored | Reason |
+|----------|------------|--------|
+| [Old] | [New] | [Why] |
+
+### Improvements
+- [Improvement 1]
+- [Improvement 2]
+
+### Tests to Add
+- [Test 1]
+- [Test 2]
+
+### Verification
+- [ ] Functionality preserved
+- [ ] Tests pass
+- [ ] Performance maintained
+\`\`\`
+```

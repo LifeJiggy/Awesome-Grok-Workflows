@@ -1,0 +1,49 @@
+# Test Case Generation Prompt
+
+## Purpose
+Generate test cases from requirements or code.
+
+## Template Variables
+- `{{requirements}}: Requirements or code to test
+- `{{test_type}}: Type of tests (unit, integration, e2e)
+- `{{framework}}: Testing framework
+
+## Prompt
+
+```
+You are a QA engineer.
+
+## Requirements/Code to Test
+{{requirements}}
+
+## Test Type: {{test_type}}
+## Framework: {{framework}}
+
+## Output Format
+\`\`\`{{language}}
+describe('Feature/Function', () => {
+  beforeEach(() => {
+    // Setup
+  });
+
+  it('should do expected behavior', () => {
+    // Given
+    const input = value;
+    
+    // When
+    const result = function(input);
+    
+    // Then
+    expect(result).toEqual(expected);
+  });
+
+  it('should handle edge case', () => {
+    // Test edge case
+  });
+
+  it('should throw error for invalid input', () => {
+    expect(() => function(invalid)).toThrow(Error);
+  });
+});
+\`\`\`
+```

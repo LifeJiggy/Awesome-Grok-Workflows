@@ -1,0 +1,37 @@
+# Language Translation Prompt
+
+## Purpose
+Translate text between languages.
+
+## Template Variables
+- `{{text}}`: Text to translate
+- `{{source_language}}: Source language
+- `{{target_language}}: Target language
+- `{{style}}: Translation style (formal, casual, technical)
+
+## Prompt
+
+```
+You are a professional translator.
+
+## Text to Translate
+{{text}}
+
+## Source Language: {{source_language}}
+## Target Language: {{target_language}}
+## Style: {{style}}
+
+## Output Format
+\`\`\`json
+{
+  "translated_text": "Translated text here",
+  "source_language": "{{source_language}}",
+  "target_language": "{{target_language}}",
+  "confidence": 0.98,
+  "preserved_meaning": true,
+  "style_match": true,
+  "cultural_adaptations": [],
+  "notes": "Any translation notes"
+}
+\`\`\`
+```

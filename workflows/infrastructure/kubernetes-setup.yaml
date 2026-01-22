@@ -1,0 +1,95 @@
+name: Kubernetes Cluster Setup
+version: 1.0.0
+description: Provision and configure Kubernetes cluster infrastructure
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_manual
+  - on_approval: infrastructure_change
+
+steps:
+  - name: validate-terraform
+    action: terraform.validate
+    params:
+      path: "kubernetes/"
+    outputs: [validation_result]
+
+  - name: plan-infrastructure
+    action: terraform.plan
+    needs: [validate-terraform]
+    params:
+      path: "kubernetes/"
+      var_file: "{{inputs.environment}}.tfvars"
+    outputs: [execution_plan]
+
+  - name: review-plan
+    action: workflow.require_approval
+    needs: [plan-infrastructure]
+    params:
+      timeout: "24h"
+    condition: "inputs.auto_approve != true"
+
+  - name: provision-cluster
+    action: kubernetes.provision
+    needs: [review-plan]
+    params:
+      provider: "aws"
+      cluster_name: "{{inputs.cluster_name}}"
+      node_count: "{{inputs.node_count}}"
+      instance_type: "m5.xlarge"
+    outputs: [cluster_endpoint, cluster_status]
+
+  - name: configure-network
+    action: kubernetes.configure_network
+    needs: [provision-cluster]
+    params:
+      vpc_id: "{{inputs.vpc_id}}"
+      subnets: "{{inputs.subnets}}"
+      enable_encryption: true
+    outputs: [network_configured]
+
+  - name: install-addons
+    action: kubernetes.install_addons
+    needs: [provision-cluster]
+    params:
+      addons: ["metrics-server", "ingress-nginx", "cert-manager", "external-dns"]
+    outputs: [addons_installed]
+
+  - name: configure-monitoring
+    action: kubernetes.install_monitoring
+    needs: [install-addons]
+    params:
+      prometheus: true
+      grafana: true
+      alertmanager: true
+    outputs: [monitoring_installed]
+
+  - name: configure-security
+    action: kubernetes.configure_security
+    needs: [install-addons]
+    params:
+      rbac: true
+      pod_security_policy: true
+      network_policies: true
+    outputs: [security_configured]
+
+  - name: verify-cluster
+    action: kubernetes.verify
+    needs: [configure-network, configure-security]
+    params:
+      tests: ["node_count", "addons_health", "api_access", "network_policy"]
+    outputs: [verification_result]
+
+  - name: update-dns
+    action: dns.update
+    needs: [verify-cluster]
+    params:
+      record: "k8s.{{inputs.domain}}"
+      target: "{{outputs.provision-cluster.cluster_endpoint}}"
+    outputs: [dns_updated]
+
+  - name: generate-report
+    action: reporter.generate_k8s_setup_report
+    needs: [verify-cluster, update-dns]
+    outputs: [setup_report]

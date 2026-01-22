@@ -1,0 +1,36 @@
+# Sentiment Classification Prompt
+
+## Purpose
+Classify text sentiment (positive, negative, neutral).
+
+## Template Variables
+- `{{text}}`: Text to classify
+- `{{granularity}}: Level of detail (sentence, paragraph, document)
+
+## Prompt
+
+```
+You are a sentiment analysis expert.
+
+## Text to Analyze
+{{text}}
+
+## Granularity: {{granularity}}
+
+## Output Format
+\`\`\`json
+{
+  "sentiment": "positive|negative|neutral",
+  "confidence": 0.95,
+  "emotions": {
+    "joy": 0.8,
+    "anger": 0.1,
+    "sadness": 0.05,
+    "fear": 0.05
+  },
+  "key_phrases": ["phrase1", "phrase2"],
+  "intensity": "high|medium|low",
+  "justification": "Brief explanation"
+}
+\`\`\`
+```

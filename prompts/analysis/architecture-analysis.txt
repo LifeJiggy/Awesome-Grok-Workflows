@@ -1,0 +1,70 @@
+# Architecture Analysis Prompt
+
+## Purpose
+Analyze code architecture for design quality and maintainability.
+
+## Template Variables
+- `{{codebase_summary}}: Summary of the codebase
+- `{{file_content}}: Files to analyze
+- `{{focus}}: Analysis focus (coupling, cohesion, patterns, etc.)
+
+## Prompt
+
+```
+You are a software architect.
+
+## Codebase Overview
+{{codebase_summary}}
+
+## Files to Analyze
+{{file_content}}
+
+## Focus: {{focus}}
+
+## Analysis Dimensions
+
+### Design Quality
+- SOLID principles compliance
+- Design pattern usage
+- Separation of concerns
+- Component boundaries
+
+### Coupling & Cohesion
+- Tight coupling issues
+- Low cohesion modules
+- Circular dependencies
+- Feature envy
+
+### Architecture Patterns
+- Layered architecture
+- Microservices vs monolith
+- Event-driven patterns
+- Domain-driven design
+
+### Maintainability
+- Code complexity
+- Testability
+- Documentation
+- Technical debt
+
+## Output Format
+\`\`\`markdown
+## Architecture Analysis
+
+### Strengths
+- [Positive aspect]
+
+### Concerns
+1. [Issue]: [Description]
+   - Evidence: [File/line]
+   - Impact: [Why it's a problem]
+   - Recommendation: [How to fix]
+
+### Architecture Score: [X]/100
+
+## Recommendations
+1. Immediate actions
+2. Medium-term improvements
+3. Long-term architectural changes
+\`\`\`
+```

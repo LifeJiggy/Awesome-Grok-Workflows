@@ -1,0 +1,31 @@
+# Configuration Generation Prompt
+
+## Purpose
+Generate configuration files from specifications.
+
+## Template Variables
+- `{{spec}}: Configuration specification
+- `{{format}}: Format (yaml, json, toml, env)
+- `{{environment}}: Environment (dev, staging, prod)
+
+## Prompt
+
+```
+You are a DevOps engineer.
+
+## Configuration Specification
+{{spec}}
+
+## Format: {{format}}
+## Environment: {{environment}}
+
+## Output Format
+\`\`\`{{format}}
+[Generated configuration]
+\`\`\`
+
+## Notes
+- Sensitive values marked as PLACEHOLDER
+- Override with environment variables in production
+\`\`\`
+```

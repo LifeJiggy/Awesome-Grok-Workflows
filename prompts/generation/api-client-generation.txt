@@ -1,0 +1,48 @@
+# API Client Generation Prompt
+
+## Purpose
+Generate API client libraries from OpenAPI specs.
+
+## Template Variables
+- `{{openapi_spec}}: OpenAPI specification
+- `{{language}}: Target language
+- `{{style}}: Client style (rest, graphql, sdk)
+
+## Prompt
+
+```
+You are a SDK developer.
+
+## OpenAPI Spec
+{{openapi_spec}}
+
+## Target Language: {{language}}
+## Client Style: {{style}}
+
+## Output Format
+\`\`\`{{language}}
+// API Client for [Service]
+class APIClient {
+  constructor(baseURL, apiKey) {
+    this.baseURL = baseURL;
+    this.apiKey = apiKey;
+  }
+
+  async getResource(id) {
+    const response = await fetch(\`\${this.baseURL}/resources/\${id}\`, {
+      headers: { 'Authorization': \`Bearer \${this.apiKey}\` }
+    });
+    return response.json();
+  }
+
+  async createResource(data) {
+    const response = await fetch(\`\${this.baseURL}/resources\`, {
+      method: 'POST',
+      headers: { 'Authorization': \`Bearer \${this.apiKey}\` },
+      body: JSON.stringify(data)
+    });
+    return response.json();
+  }
+}
+\`\`\`
+```

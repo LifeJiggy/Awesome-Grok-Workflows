@@ -1,0 +1,75 @@
+name: Data Quality Validation Pipeline
+version: 1.0.0
+description: Validate data quality and integrity across data sources
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 6 * * *"  # Daily at 6 AM
+  - on_manual
+
+steps:
+  - name: discover-data-sources
+    action: data.discover_sources
+    outputs: [data_sources, schemas]
+
+  - name: validate-schemas
+    action: data.validate_schemas
+    needs: [discover-data-sources]
+    params:
+      schemas: "{{outputs.discover-data-sources.schemas}}"
+    outputs: [schema_validation_results]
+
+  - name: check-completeness
+    action: data.check_completeness
+    needs: [discover-data-sources]
+    params:
+      checks: ["null_percentage", "missing_values", "completeness_score"]
+    outputs: [completeness_results]
+
+  - name: check-accuracy
+    action: data.check_accuracy
+    needs: [discover-data-sources]
+    params:
+      checks: ["range_validation", "format_validation", "referential_integrity"]
+    outputs: [accuracy_results]
+
+  - name: check-consistency
+    action: data.check_consistency
+    needs: [discover-data-sources]
+    params:
+      checks: ["cross_source", "temporal", "business_rules"]
+    outputs: [consistency_results]
+
+  - name: check-timeliness
+    action: data.check_timeliness
+    needs: [discover-data-sources]
+    params:
+      checks: ["freshness", "update_frequency", "latency"]
+    outputs: [timeliness_results]
+
+  - name: generate-quality-score
+    action: data.generate_quality_score
+    needs: [check-completeness, check-accuracy, check-consistency, check-timeliness]
+    outputs: [quality_scores, quality_report]
+
+  - name: flag-anomalies
+    action: data.flag_anomalies
+    needs: [generate-quality-score]
+    params:
+      threshold: 0.7
+    outputs: [flagged_records, anomaly_report]
+
+  - name: create-issues
+    action: tracker.create_data_issues
+    needs: [flag-anomalies]
+    params:
+      project: "data_quality"
+    outputs: [issue_ids]
+
+  - name: notify-data-owners
+    action: notification.notify_owners
+    needs: [create-issues]
+    params:
+      issues: "{{outputs.create-issues.issue_ids}}"

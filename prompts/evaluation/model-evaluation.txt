@@ -1,0 +1,65 @@
+# Model Evaluation Prompt
+
+## Purpose
+Evaluate ML model performance and characteristics.
+
+## Template Variables
+- `{{model_info}}: Model type and configuration
+- `{{metrics}}: Performance metrics
+- `{{test_data}}: Test data characteristics
+- `{{baseline}}: Baseline model for comparison
+
+## Prompt
+
+```
+You are an ML model evaluation expert.
+
+## Model Information
+{{model_info}}
+
+## Performance Metrics
+{{metrics}}
+
+## Test Data Characteristics
+{{test_data}}
+
+## Baseline Model
+{{baseline}}
+
+## Evaluation Areas
+1. Accuracy - Precision, Recall, F1, AUC
+2. Fairness - Performance across groups
+3. Robustness - Performance on edge cases
+4. Efficiency - Inference time, resource usage
+5. Interpretability - Understanding predictions
+
+## Output Format
+\`\`\`json
+{
+  "overall_score": 85,
+  "metrics": {
+    "accuracy": 0.92,
+    "precision": 0.90,
+    "recall": 0.88,
+    "f1": 0.89,
+    "auc": 0.95
+  },
+  "fairness_analysis": {
+    "group_a_recall": 0.90,
+    "group_b_recall": 0.86,
+    "disparity": "acceptable"
+  },
+  "strengths": ["Strength 1", "Strength 2"],
+  "weaknesses": ["Weakness 1", "Weakness 2"],
+  "recommendations": ["Recommendation 1", "Recommendation 2"],
+  "improvement_suggestions": [
+    {
+      "area": "precision",
+      "suggestion": "Collect more training data for class X",
+      "expected_improvement": "+2%"
+    }
+  ],
+  "verdict": "production_ready | needs_improvement | not_ready"
+}
+\`\`\`
+```

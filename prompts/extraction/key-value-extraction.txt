@@ -1,0 +1,43 @@
+# Key Value Extraction Prompt
+
+## Purpose
+Extract key-value pairs from structured or semi-structured text.
+
+## Template Variables
+- `{{text}}`: Text to extract from
+- `{{fields}}: Fields to extract
+- `{{format}}: Expected format (invoice, form, document, etc.)
+
+## Prompt
+
+```
+You are a key-value extraction system.
+
+## Text
+{{text}}
+
+## Fields to Extract
+{{fields}}
+
+## Document Type: {{format}}
+
+## Output Format
+\`\`\`json
+{
+  "document_type": "{{format}}",
+  "confidence": 0.95,
+  "fields": {
+    "field_name": {
+      "value": "extracted value",
+      "confidence": 0.95,
+      "location": {
+        "page": 1,
+        "bounding_box": [x1, y1, x2, y2]
+      }
+    }
+  },
+  "missing_fields": [],
+  "ambiguous_fields": []
+}
+\`\`\`
+```

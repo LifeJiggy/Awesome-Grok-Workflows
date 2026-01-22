@@ -1,0 +1,69 @@
+name: CDN Configuration Management
+version: 1.0.0
+description: Manage and optimize CDN configuration across providers
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_manual
+  - on_deployment
+
+steps:
+  - name: inventory-cdn-resources
+    action: cdn.list_resources
+    outputs: [cdn_resources, current_config]
+
+  - name: validate-cdn-config
+    action: cdn.validate_config
+    needs: [inventory-cdn-resources]
+    params:
+      config: "{{outputs.inventory-cdn-resources.current_config}}"
+    outputs: [config_validation]
+
+  - name: optimize-caching
+    action: cdn.optimize_caching
+    needs: [inventory-cdn-resources]
+    params:
+      rules: ["cache_static", "api_no_cache", "html_short_ttl"]
+    outputs: [optimization_suggestions]
+
+  - name: update-security-settings
+    action: cdn.update_security
+    needs: [inventory-cdn-resources]
+    params:
+      settings: ["waf_enabled", "ddos_protection", "tls_1.3"]
+    outputs: [security_updated]
+
+  - name: purge-cache
+    action: cdn.purge_cache
+    needs: [validate-cdn-config]
+    condition: "inputs.purge_required == true"
+    params:
+      paths: ["/*"]
+    outputs: [purge_status]
+
+  - name: deploy-config
+    action: cdn.deploy_config
+    needs: [optimize-caching, update-security-settings, validate-cdn-config]
+    params:
+      dry_run: "{{inputs.dry_run}}"
+    outputs: [deployment_status]
+
+  - name: verify-deployment
+    action: cdn.verify_deployment
+    needs: [deploy-config]
+    params:
+      checks: ["edge_locations", "config_applied", "performance"]
+    outputs: [verification_result]
+
+  - name: monitor-performance
+    action: cdn.monitor_performance
+    needs: [verify-deployment]
+    params:
+      duration: "1h"
+    outputs: [performance_metrics, cache_hit_ratio]
+
+  - name: generate-cdn-report
+    action: reporter.generate_cdn_report
+    needs: [monitor-performance]
+    outputs: [cdn_report]

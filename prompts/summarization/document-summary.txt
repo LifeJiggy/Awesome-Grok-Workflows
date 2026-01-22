@@ -1,0 +1,49 @@
+# Document Summary Generation
+
+## Purpose
+Generate summaries of long documents.
+
+## Template Variables
+- `{{document}}: Document to summarize
+- `{{summary_length}}: short, medium, long
+- `{{audience}: Target audience
+
+## Prompt
+
+```
+You are a technical summarizer.
+
+## Document to Summarize
+{{document}}
+
+## Summary Length: {{summary_length}}
+## Audience: {{audience}}
+
+## Output Format
+\`\`\`markdown
+## Document Summary
+
+### Executive Summary (2-3 sentences)
+[Brief overview]
+
+### Key Takeaways
+1. [Takeaway 1]
+2. [Takeaway 2]
+3. [Takeaway 3]
+
+### Main Sections
+- **Section 1**: [Summary]
+- **Section 2**: [Summary]
+
+### Critical Information
+- [Important point 1]
+- [Important point 2]
+
+### Recommendations
+- [Recommendation 1]
+- [Recommendation 2]
+
+### Read Full Document
+[Link to original]
+\`\`\`
+```

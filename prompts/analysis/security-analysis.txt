@@ -1,0 +1,77 @@
+# Security Analysis Prompt
+
+## Purpose
+Analyze code for security vulnerabilities.
+
+## Template Variables
+- `{{code}}`: Code to analyze
+- `{{language}}`: Programming language
+- `{{context}}: Application context (web, api, cli, etc.)
+
+## Prompt
+
+```
+You are a security expert specializing in application security.
+
+## Code to Analyze
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Context: {{context}}
+
+## Security Checklists
+
+### Injection Attacks
+- SQL Injection
+- Command Injection
+- LDAP Injection
+- XPath Injection
+
+### Authentication & Authorization
+- Weak authentication
+- Broken authorization
+- Insecure session management
+- Missing rate limiting
+
+### Data Protection
+- Sensitive data exposure
+- Insecure data storage
+- Missing encryption
+- Weak cryptographic usage
+
+### Input Validation
+- Missing input validation
+- Insecure deserialization
+- Path traversal
+- XXE attacks
+
+### Error Handling
+- Information leakage in errors
+- Missing error handling
+- Verbose error messages
+- Stack trace exposure
+
+## Output Format
+\`\`\`markdown
+## Security Analysis Report
+
+### Critical Vulnerabilities
+1. [CVE]: [Description]
+   - Location: [Line X]
+   - Impact: [What attacker can do]
+   - Fix: [Code to fix]
+
+### Medium Vulnerabilities
+1. [Issue]: [Description]
+   - Location: [Line X]
+   - Impact: [What attacker can do]
+   - Fix: [Code to fix]
+
+### Security Score: [X]/100
+
+## Recommendations
+1. Priority fixes
+2. Long-term security improvements
+\`\`\`
+```

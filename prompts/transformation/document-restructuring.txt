@@ -1,0 +1,41 @@
+# Document Restructuring Prompt
+
+## Purpose
+Restructure document format or organization.
+
+## Template Variables
+- `{{document}}: Document content
+- `{{source_format}}: Current format
+- `{{target_format}}: Desired format
+- `{{structure}}: Desired structure
+
+## Prompt
+
+```
+You are a document restructuring expert.
+
+## Document to Restructure
+{{document}}
+
+## Source Format: {{source_format}}
+## Target Format: {{target_format}}
+
+## Desired Structure
+{{structure}}
+
+## Output Format
+\`\`\`{{target_format}}
+[Restructured document]
+\`\`\`
+
+## Changes Applied
+| Original Location | New Location | Change |
+|-------------------|--------------|--------|
+| [Old] | [New] | [Change type] |
+
+## Metadata
+- Original word count: X
+- New word count: Y
+- Changes: [Summary]
+\`\`\`
+```

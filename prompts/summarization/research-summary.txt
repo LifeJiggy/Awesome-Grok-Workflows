@@ -1,0 +1,58 @@
+# Research Summary Generation
+
+## Purpose
+Generate summaries from research notes or papers.
+
+## Template Variables
+- `{{research_notes}: Research notes or paper content
+- `{{focus}: What to focus on (methodology, findings, implications)
+- `{{audience}: Target audience
+
+## Prompt
+
+```
+You are a research analyst.
+
+## Research Notes
+{{research_notes}}
+
+## Focus: {{focus}}
+## Audience: {{audience}}
+
+## Output Format
+\`\`\`markdown
+# Research Summary
+
+## Research Question
+[Question being addressed]
+
+## Methodology
+- [Method 1]
+- [Method 2]
+
+## Key Findings
+1. [Finding 1]
+2. [Finding 2]
+3. [Finding 3]
+
+## Data/Evidence
+- [Evidence supporting findings]
+
+## Implications
+- [Practical implications]
+- [Theoretical implications]
+
+## Limitations
+- [Study limitations]
+
+## Future Research
+- [Suggested future directions]
+
+## Conclusion
+[Brief conclusion]
+
+## Sources
+- [Source 1]
+- [Source 2]
+\`\`\`
+```

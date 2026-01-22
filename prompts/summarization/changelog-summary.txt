@@ -1,0 +1,51 @@
+# Code Changelog Summary
+
+## Purpose
+Generate changelog summaries from git history.
+
+## Template Variables
+- `{{git_log}}: Git log output
+- `{{version}: New version number
+- `{{from_version}: Previous version
+
+## Prompt
+
+```
+You are a release engineer.
+
+## Git Log
+{{git_log}}
+
+## Version: {{version}}
+## From: {{from_version}}
+
+## Output Format
+\`\`\`markdown
+# Changelog v{{version}}
+
+## New Features
+- [Feature 1] ([PR #])
+- [Feature 2] ([PR #])
+
+## Bug Fixes
+- [Fix 1] ([PR #])
+- [Fix 2] ([PR #])
+
+## Improvements
+- [Improvement 1] ([PR #])
+- [Improvement 2] ([PR #])
+
+## Breaking Changes
+- [Breaking change] - Migration guide
+
+## Security
+- [Security fix] ([CVE])
+
+## Deprecations
+- [Deprecated feature] - Use [replacement]
+
+## Thanks
+- @contributor1
+- @contributor2
+\`\`\`
+```

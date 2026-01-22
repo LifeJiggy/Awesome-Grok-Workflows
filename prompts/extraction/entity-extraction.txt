@@ -1,0 +1,52 @@
+# Entity Extraction Prompt
+
+## Purpose
+Extract named entities from text.
+
+## Template Variables
+- `{{text}}`: Text to extract from
+- `{{entity_types}}: Types of entities to extract
+- `{{schema}}: Output schema
+
+## Prompt
+
+```
+You are a named entity recognition system.
+
+## Text
+{{text}}
+
+## Entity Types to Extract
+{{entity_types}}
+
+## Output Schema
+\`\`\`json
+{{schema}}
+\`\`\`
+
+## Output Format
+\`\`\`json
+{
+  "entities": [
+    {
+      "text": "John Smith",
+      "type": "PERSON",
+      "start": 0,
+      "end": 10,
+      "confidence": 0.95,
+      "metadata": {
+        "normalized": "john smith"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "John Smith",
+      "target": "Acme Corp",
+      "type": "WORKS_FOR",
+      "confidence": 0.90
+    }
+  ]
+}
+\`\`\`
+```

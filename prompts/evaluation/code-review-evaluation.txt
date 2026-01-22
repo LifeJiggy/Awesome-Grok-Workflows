@@ -1,0 +1,68 @@
+# Code Review Evaluation Prompt
+
+## Purpose
+Evaluate code changes in a PR/merge request.
+
+## Template Variables
+- `{{diff}}: Code diff to review
+- `{{context}}: PR context and description
+- `{{standards}}: Code standards to follow
+
+## Prompt
+
+```
+You are a code reviewer.
+
+## Pull Request Context
+{{context}}
+
+## Code Changes
+\`\`\`diff
+{{diff}}
+\`\`\`
+
+## Standards to Follow
+{{standards}}
+
+## Evaluation Criteria
+1. Correctness - Does it work?
+2. Design - Is it well-designed?
+3. Complexity - Is it too complex?
+4. Tests - Are there tests?
+5. Naming - Is it clear?
+6. Comments - Are they useful?
+7. Style - Does it follow standards?
+
+## Output Format
+\`\`\`markdown
+## Code Review
+
+### Summary
+[Overview of changes]
+
+### Review Result: APPROVED | REQUEST_CHANGES | APPROVE_WITH_SUGGESTIONS
+
+### Comments
+
+#### Blocking Issues (Must Fix)
+1. [Issue]: [Description]
+   - File: [File]
+   - Line: [Line]
+   - Fix: [Suggestion]
+
+#### Suggestions (Nice to Have)
+1. [Suggestion]: [Description]
+   - File: [File]
+   - Line: [Line]
+   - Reasoning: [Why]
+
+### Automated Checks
+- [ ] Linting passes
+- [ ] Tests pass
+- [ ] No security issues
+- [ ] Documentation updated
+
+### Approvals Required: 1
+### Current Approvals: 0
+\`\`\`
+```

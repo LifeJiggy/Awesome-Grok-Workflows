@@ -1,0 +1,71 @@
+# Code Complexity Analysis Prompt
+
+## Purpose
+Analyze code complexity and identify refactoring opportunities.
+
+## Template Variables
+- `{{code}}`: Code to analyze
+- `{{language}}`: Programming language
+- `{{threshold}}: Cyclomatic complexity threshold (default: 10)
+
+## Prompt
+
+```
+You are a code quality expert.
+
+## Code to Analyze
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+## Complexity Threshold: {{threshold}}
+
+## Analysis Areas
+
+### Cyclomatic Complexity
+- Number of decision points
+- Nested conditionals
+- Complex switch statements
+- Multiple return statements
+
+### Cognitive Complexity
+- Nested structures
+- Hard-to-follow logic
+- Long parameter lists
+- Excessive method length
+
+### Structural Issues
+- Large classes
+- Long methods
+- Feature envy
+- Data classes
+
+### Code Smells
+- Duplicated code
+- Magic numbers/strings
+- Deep inheritance
+- Comments explaining code
+
+## Output Format
+\`\`\`markdown
+## Complexity Analysis
+
+### High Complexity Functions
+| Function | Complexity | Location | Recommendation |
+|----------|------------|----------|----------------|
+| [Name] | [Score] | [File:LN] | [Refactor suggestion] |
+
+### Code Smells
+1. [Smell]: [Location]
+   - Impact: [Why it's bad]
+   - Fix: [How to fix]
+
+### Refactoring Plan
+1. [Priority 1]: [Function] - [Approach]
+2. [Priority 2]: [Function] - [Approach]
+
+## Estimated Improvement
+- Average complexity: 15 → 7
+- Maintainability score: 50 → 80
+\`\`\`
+```

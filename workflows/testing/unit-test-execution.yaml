@@ -1,0 +1,62 @@
+name: Unit Test Execution
+version: 1.0.0
+description: Execute unit tests with coverage reporting
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_push: [main, develop]
+  - on_manual
+
+guards:
+  - require_test_coverage_above: 80
+
+steps:
+  - name: checkout-code
+    action: git.checkout
+    outputs: [commit]
+
+  - name: install-dependencies
+    action: package.install
+    outputs: [dependencies_installed]
+
+  - name: lint-code
+    action: linter.run
+    needs: [install-dependencies]
+    outputs: [lint_result, lint_errors]
+
+  - name: run-unit-tests
+    action: test.run_unit
+    needs: [install-dependencies]
+    params:
+      coverage: true
+      coverage_threshold: 80
+    outputs: [test_results, coverage_report, coverage_percentage]
+
+  - name: run-mutation-tests
+    action: test.run_mutation
+    needs: [run-unit-tests]
+    condition: "language == 'python'"
+    outputs: [mutation_report, mutation_score]
+
+  - name: generate-coverage-badge
+    action: report.generate_coverage_badge
+    needs: [run-unit-tests]
+    outputs: [badge_url]
+
+  - name: publish-results
+    action: ci.publish_test_results
+    needs: [run-unit-tests, lint-code]
+    params:
+      results: "{{outputs.run-unit-tests.test_results}}"
+      coverage: "{{outputs.run-unit-tests.coverage_percentage}}"
+    outputs: [results_published]
+
+  - name: comment-pr
+    action: git.post_test_comment
+    needs: [publish-results]
+    params:
+      coverage: "{{outputs.run-unit-tests.coverage_percentage}}"
+      passed: "{{outputs.run-unit-tests.passed_count}}"
+      failed: "{{outputs.run-unit-tests.failed_count}}"

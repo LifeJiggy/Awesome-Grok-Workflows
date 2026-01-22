@@ -1,0 +1,97 @@
+name: Incident Response Workflow
+version: 1.0.0
+description: Automated incident detection and response
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_alert: high_severity
+  - on_manual
+
+guards:
+  - require_incident_approval
+
+steps:
+  - name: receive-alert
+    action: incident.receive_alert
+    outputs: [alert_data, severity, affected_systems]
+
+  - name: assess-impact
+    action: incident.assess_impact
+    needs: [receive-alert]
+    outputs: [impact_level, user_impact, business_impact]
+
+  - name: create-incident
+    action: incident.create
+    needs: [assess-impact]
+    params:
+      title: "{{outputs.receive-alert.alert_data.title}}"
+      severity: "{{outputs.receive-alert.severity}}"
+      impact: "{{outputs.assess-impact.impact_level}}"
+    outputs: [incident_id, incident_channel]
+
+  - name: notify-oncall
+    action: incident.notify_oncall
+    needs: [create-incident]
+    params:
+      incident_id: "{{outputs.create-incident.incident_id}}"
+      escalation_level: "{{outputs.assess-impact.impact_level}}"
+    outputs: [oncall_notified]
+
+  - name: gather-evidence
+    action: incident.collect_evidence
+    needs: [create-incident]
+    params:
+      systems: "{{outputs.receive-alert.affected_systems}}"
+    outputs: [logs, metrics, traces]
+
+  - name: diagnose-issue
+    action: incident.diagnose
+    needs: [gather-evidence]
+    params:
+      evidence: "{{outputs.gather-evidence}}"
+    outputs: [root_cause, diagnosis]
+
+  - name: contain-issue
+    action: incident.contain
+    needs: [diagnose-issue]
+    params:
+      action: "{{outputs.diagnose-issue.recommendation}}"
+    outputs: [containment_status]
+
+  - name: remediate
+    action: incident.remediate
+    needs: [contain-issue]
+    params:
+      fix_type: "{{outputs.diagnose-issue.fix_type}}"
+    outputs: [remediation_status]
+
+  - name: verify-fix
+    action: incident.verify_fix
+    needs: [remediate]
+    outputs: [verification_result]
+
+  - name: document-incident
+    action: incident.document
+    needs: [verify-fix]
+    params:
+      incident_id: "{{outputs.create-incident.incident_id}}"
+      timeline: "Collect from all steps"
+      root_cause: "{{outputs.diagnose-issue.root_cause}}"
+      resolution: "{{outputs.remediate.actions_taken}}"
+    outputs: [incident_report]
+
+  - name: post-mortem
+    action: incident.post_mortem
+    needs: [document-incident]
+    params:
+      incident_id: "{{outputs.create-incident.incident_id}}"
+      timeline: "{{outputs.document-incident.incident_report}}"
+    outputs: [post_mortem_document]
+
+  - name: close-incident
+    action: incident.close
+    needs: [post-mortem]
+    params:
+      incident_id: "{{outputs.create-incident.incident_id}}"
+      resolution_summary: "{{outputs.post-mortem.resolution_summary}}"

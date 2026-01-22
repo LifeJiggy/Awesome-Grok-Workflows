@@ -1,0 +1,49 @@
+# Table Extraction Prompt
+
+## Purpose
+Extract and structure data from tables.
+
+## Template Variables
+- `{{table_content}: Table content (text or markdown)
+- `{{table_type}}: Type of table (html, csv, markdown, image_ocr)
+
+## Prompt
+
+```
+You are a table extraction system.
+
+## Table Content
+\`\`\`
+{{table_content}}
+\`\`\`
+
+## Table Type: {{table_type}}
+
+## Output Format
+\`\`\`json
+{
+  "headers": ["Column1", "Column2", "Column3"],
+  "rows": [
+    ["Value1", "Value2", "Value3"],
+    ["Value4", "Value5", "Value6"]
+  ],
+  "metadata": {
+    "row_count": 2,
+    "column_count": 3,
+    "has_header": true,
+    "merged_cells": false
+  },
+  "extracted_data": [
+    {
+      "row_index": 0,
+      "data": {
+        "Column1": "Value1",
+        "Column2": "Value2",
+        "Column3": "Value3"
+      }
+    }
+  ],
+  "confidence": 0.98
+}
+\`\`\`
+```

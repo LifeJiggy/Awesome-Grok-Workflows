@@ -1,0 +1,51 @@
+# Documentation Generation Prompt
+
+## Purpose
+Generate technical documentation from code.
+
+## Template Variables
+- `{{codebase}}: Code to document
+- `{{language}}: Programming language
+- `{{doc_type}}: Type of documentation (api, readme, guide, reference)
+
+## Prompt
+
+```
+You are a technical writer.
+
+## Codebase
+{{codebase}}
+
+## Language: {{language}}
+## Documentation Type: {{doc_type}}
+
+## Output Format
+\`\`\`markdown
+# {{project_name}} Documentation
+
+## Overview
+[Project description]
+
+## Installation
+\`\`\`bash
+[Installation commands]
+\`\`\`
+
+## Usage
+\`\`\`{{language}}
+[Code examples]
+\`\`\`
+
+## API Reference
+### Function/Class Name
+- **Parameters**: [List]
+- **Returns**: [Type]
+- **Example**: [Usage example]
+
+## Contributing
+[How to contribute]
+
+## License
+[License information]
+\`\`\`
+```

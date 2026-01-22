@@ -1,0 +1,81 @@
+name: Cloud Resource Optimization
+version: 1.0.0
+description: Analyze and optimize cloud resource usage and costs
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "0 0 * * 0"  # Weekly Sunday
+  - on_manual
+
+steps:
+  - name: inventory-resources
+    action: cloud.list_resources
+    params:
+      providers: ["aws", "gcp", "azure"]
+    outputs: [resource_list]
+
+  - name: analyze-usage
+    action: cloud.analyze_usage
+    needs: [inventory-resources]
+    params:
+      period: "30d"
+    outputs: [usage_data, utilization_metrics]
+
+  - name: identify-idle-resources
+    action: cloud.find_idle
+    needs: [analyze-usage]
+    params:
+      idle_threshold: "7d"
+    outputs: [idle_resources, potential_savings]
+
+  - name: analyze-rightsizing
+    action: cloud.analyze_rightsizing
+    needs: [analyze-usage]
+    outputs: [rightsizing_recommendations]
+
+  - name: check-reserved-capacity
+    action: cloud.analyze_reservations
+    needs: [analyze-usage]
+    outputs: [reservation_gaps, overprovisioned]
+
+  - name: identify-legacy-resources
+    action: cloud.find_legacy
+    needs: [inventory-resources]
+    params:
+      criteria: ["old_generation", "deprecated_services", "older_than_2y"]
+    outputs: [legacy_resources, legacy_savings]
+
+  - name: generate-optimization-plan
+    action: cloud.generate_optimization_plan
+    needs: [identify-idle-resources, analyze-rightsizing, check-reserved-capacity, identify-legacy-resources]
+    outputs: [optimization_plan, total_potential_savings]
+
+  - name: auto-scale-resources
+    action: cloud.auto_scale
+    needs: [generate-optimization-plan]
+    params:
+      actions: ["downscale_idle", "rightsizing"]
+      dry_run: "{{inputs.dry_run}}"
+    outputs: [scaling_actions, scaling_results]
+
+  - name: schedule-cleanup
+    action: cloud.schedule_cleanup
+    needs: [identify-idle-resources]
+    params:
+      resources: "{{outputs.identify-idle-resources.idle_resources}}"
+      retention: "7d"
+    outputs: [cleanup_scheduled]
+
+  - name: generate-report
+    action: reporter.generate_cost_optimization_report
+    needs: [generate-optimization-plan, auto-scale-resources]
+    outputs: [optimization_report]
+
+  - name: notify-team
+    action: notification.send_cost_summary
+    needs: [generate-report]
+    params:
+      potential_savings: "{{outputs.generate-optimization-plan.total_potential_savings}}"
+      report_url: "{{outputs.generate-report.optimization_report}}"

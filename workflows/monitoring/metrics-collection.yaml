@@ -1,0 +1,68 @@
+name: Metrics Collection Pipeline
+version: 1.0.0
+description: Collect and process application and infrastructure metrics
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "*/1 * * * *"  # Every minute
+  - on_manual
+
+steps:
+  - name: collect-infrastructure-metrics
+    action: metrics.collect_infrastructure
+    params:
+      sources: ["cpu", "memory", "disk", "network"]
+    outputs: [infra_metrics]
+
+  - name: collect-application-metrics
+    action: metrics.collect_application
+    params:
+      sources: ["requests", "latency", "errors", "throughput"]
+    outputs: [app_metrics]
+
+  - name: collect-business-metrics
+    action: metrics.collect_business
+    params:
+      sources: ["users", "orders", "revenue", "conversion"]
+    outputs: [business_metrics]
+
+  - name: aggregate-metrics
+    action: metrics.aggregate
+    needs: [collect-infrastructure-metrics, collect-application-metrics, collect-business-metrics]
+    outputs: [aggregated_metrics]
+
+  - name: calculate-baselines
+    action: metrics.calculate_baselines
+    needs: [aggregate-metrics]
+    params:
+      window: "24h"
+    outputs: [baselines, deviations]
+
+  - name: detect-anomalies
+    action: metrics.detect_anomalies
+    needs: [calculate-baselines]
+    params:
+      sensitivity: 2.0
+    outputs: [anomalies, anomaly_details]
+
+  - name: store-metrics
+    action: metrics.store
+    needs: [aggregate-metrics]
+    params:
+      retention: "90d"
+      resolution: "1m"
+    outputs: [stored_count]
+
+  - name: update-alerts
+    action: metrics.update_alerts
+    needs: [detect-anomalies]
+    outputs: [alert_updates]
+
+  - name: generate-summary
+    action: reporter.generate_metrics_summary
+    needs: [aggregate-metrics, detect-anomalies]
+    params:
+      period: "last_hour"
+    outputs: [metrics_summary]

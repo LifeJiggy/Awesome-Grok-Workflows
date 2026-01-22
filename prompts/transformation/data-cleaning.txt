@@ -1,0 +1,67 @@
+# Data Cleaning Prompt
+
+## Purpose
+Clean and normalize data.
+
+## Template Variables
+- `{{data}}: Data to clean
+- `{{data_type}}: Type of data (csv, json, database_records)
+- `{{issues}}: Issues to address
+- `{{schema}}: Target schema
+
+## Prompt
+
+```
+You are a data cleaning expert.
+
+## Data to Clean
+\`\`\`{{data_type}}
+{{data}}
+\`\`\`
+
+## Data Type: {{data_type}}
+## Issues to Address
+{{issues}}
+
+## Target Schema
+\`\`\`json
+{{schema}}
+\`\`\`
+
+## Output Format
+\`\`\`json
+{
+  "cleaned_data": [
+    {
+      "original": {"field": "value"},
+      "cleaned": {"field": "cleaned_value"},
+      "changes": [
+        {
+          "field": "field",
+          "original": "value",
+          "cleaned": "cleaned_value",
+          "issue": "issue type",
+          "fix": "applied fix"
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "total_records": 100,
+    "records_modified": 25,
+    "issues_found": {
+      "missing_values": 5,
+      "duplicates": 3,
+      "formatting": 10,
+      "outliers": 2
+    },
+    "issues_resolved": {
+      "missing_values": 5,
+      "duplicates": 3,
+      "formatting": 10,
+      "outliers": 1
+    }
+  }
+}
+\`\`\`
+```

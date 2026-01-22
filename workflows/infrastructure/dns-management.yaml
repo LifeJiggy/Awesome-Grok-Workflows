@@ -1,0 +1,52 @@
+name: DNS Management Workflow
+version: 1.0.0
+description: Manage DNS records and configurations
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_manual
+  - on_deployment
+
+steps:
+  - name: get-dns-state
+    action: dns.get_state
+    outputs: [current_records, dns_config]
+
+  - name: validate-changes
+    action: dns.validate_changes
+    params:
+      proposed_records: "{{inputs.proposed_records}}"
+    outputs: [validation_result]
+
+  - name: check-dns-propagation
+    action: dns.check_propagation
+    needs: [validate-changes]
+    params:
+      records: "{{inputs.proposed_records}}"
+    outputs: [propagation_status]
+
+  - name: apply-changes
+    action: dns.apply_changes
+    needs: [validate-changes]
+    params:
+      changes: "{{inputs.proposed_records}}"
+    outputs: [applied_records]
+
+  - name: verify-dns
+    action: dns.verify
+    needs: [apply-changes]
+    params:
+      expected_records: "{{inputs.proposed_records}}"
+    outputs: [verification_result]
+
+  - name: update-cdn
+    action: cdn.update_dns
+    needs: [verify-dns]
+    condition: "outputs.verification-result.success == true"
+    outputs: [cdn_updated]
+
+  - name: document-changes
+    action: dns.document_changes
+    needs: [apply-changes]
+    outputs: [change_log]

@@ -1,0 +1,98 @@
+name: Performance Test Suite
+version: 1.0.0
+description: Load and performance testing for scalability validation
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_release
+  - on_manual
+
+steps:
+  - name: setup-test-env
+    action: environment.setup
+    params:
+      type: performance_test
+      scale: "production_like"
+    outputs: [env_ready]
+
+  - name: warm-up
+    action: test.warm_up
+    needs: [setup-test-env]
+    params:
+      duration: "2m"
+      vus: 10
+    outputs: [warmup_complete]
+
+  - name: load-test
+    action: test.run_load_test
+    needs: [warm-up]
+    params:
+      vus: 100
+      duration: "30m"
+      ramp_up: "5m"
+      ramp_down: "5m"
+    outputs: [load_results]
+
+  - name: stress-test
+    action: test.run_stress_test
+    needs: [load-test]
+    params:
+      vus: 500
+      duration: "15m"
+      peak_vus: 1000
+    outputs: [stress_results]
+
+  - name: spike-test
+    action: test.run_spike_test
+    needs: [stress-test]
+    params:
+      baseline_vus: 100
+      spike_vus: 2000
+      spike_duration: "2m"
+    outputs: [spike_results]
+
+  - name: soak-test
+    action: test.run_soak_test
+    needs: [spike-test]
+    params:
+      vus: 200
+      duration: "24h"
+    outputs: [soak_results]
+    condition: "inputs.run_soak == true"
+
+  - name: analyze-results
+    action: test.analyze_performance
+    needs: [load-test, stress-test, spike-test]
+    params:
+      thresholds: {
+        "p95_response_time": "500ms",
+        "error_rate": "1%",
+        "throughput": "1000 req/s"
+      }
+    outputs: [performance_analysis, pass_fail]
+
+  - name: resource-analysis
+    action: test.analyze_resources
+    needs: [analyze-results]
+    outputs: [cpu_usage, memory_usage, network_usage]
+
+  - name: generate-report
+    action: reporter.generate_performance_report
+    needs: [analyze-results, resource-analysis]
+    outputs: [performance_report]
+
+  - name: upload-artifacts
+    action: ci.upload_artifacts
+    needs: [generate-report]
+    params:
+      artifacts: ["k6_results", "profiles", "report"]
+    outputs: [artifact_urls]
+
+  - name: notify-results
+    action: notification.send_performance_summary
+    needs: [generate-report]
+    params:
+      pass_fail: "{{outputs.analyze-results.pass_fail}}"
+      p95: "{{outputs.analyze-results.p95_response_time}}"

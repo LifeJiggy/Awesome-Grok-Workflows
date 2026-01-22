@@ -1,0 +1,72 @@
+name: Log Aggregation Pipeline
+version: 1.0.0
+description: Collect, process, and analyze logs from multiple sources
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "*/5 * * * *"  # Every 5 minutes
+  - on_event: log.upload.requested
+
+steps:
+  - name: collect-logs
+    action: logs.collect
+    params:
+      sources: ["application", "infrastructure", "security"]
+      time_range: "last_5_minutes"
+    outputs: [log_batches]
+
+  - name: parse-logs
+    action: logs.parse
+    needs: [collect-logs]
+    params:
+      formats: ["json", "nginx", "apache", "syslog"]
+    outputs: [parsed_logs, parsing_errors]
+
+  - name: enrich-logs
+    action: logs.enrich
+    needs: [parse-logs]
+    params:
+      enrichments: ["geoip", "user_agent", "correlation_id"]
+    outputs: [enriched_logs]
+
+  - name: detect-anomalies
+    action: logs.detect_anomalies
+    needs: [enrich-logs]
+    params:
+      sensitivity: high
+      patterns: ["error_spike", "failed_logins", "slow_responses"]
+    outputs: [anomalies, anomaly_scores]
+
+  - name: index-logs
+    action: logs.index
+    needs: [enrich-logs]
+    params:
+      index: "logs-prod"
+      retention: "30d"
+    outputs: [indexed_count]
+
+  - name: generate-alerts
+    action: logs.generate_alerts
+    needs: [detect-anomalies]
+    params:
+      threshold: 0.8
+      channels: ["slack", "pagerduty"]
+    outputs: [alerts_created]
+
+  - name: create-report
+    action: reporter.generate_log_report
+    needs: [index-logs]
+    params:
+      time_range: "last_5_minutes"
+      metrics: ["error_count", "warning_count", "info_count"]
+    outputs: [log_report]
+
+  - name: archive-logs
+    action: logs.archive
+    needs: [index-logs]
+    params:
+      age: "7d"
+      destination: "cold_storage"
+    outputs: [archived_count]

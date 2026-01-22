@@ -1,0 +1,34 @@
+# Language Detection Prompt
+
+## Purpose
+Detect the language of given text.
+
+## Template Variables
+- `{{text}}`: Text to analyze
+- `{{include_dialect}}: Include dialect detection (true/false)
+
+## Prompt
+
+```
+You are a language detection system.
+
+## Text to Analyze
+{{text}}
+
+## Include Dialect: {{include_dialect}}
+
+## Output Format
+\`\`\`json
+{
+  "language": "en",
+  "language_name": "English",
+  "confidence": 0.99,
+  "dialect": "en-US",
+  "alternatives": [
+    {"language": "en-GB", "confidence": 0.01}
+  ],
+  "script": "Latin",
+  "direction": "ltr"
+}
+\`\`\`
+```

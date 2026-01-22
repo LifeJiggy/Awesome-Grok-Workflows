@@ -1,0 +1,75 @@
+name: Synthetic Monitoring Workflow
+version: 1.0.0
+description: Proactive synthetic testing of critical user journeys
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_schedule:
+      cron: "*/5 * * * *"  # Every 5 minutes
+  - on_manual
+
+steps:
+  - name: define-journeys
+    action: monitoring.list_journeys
+    outputs: [user_journeys]
+
+  - name: test-login-journey
+    action: monitoring.synthetic_test
+    needs: [define-journeys]
+    params:
+      journey: "user_login"
+      steps: ["navigate", "enter_credentials", "submit", "verify_dashboard"]
+      browser: "chrome"
+    outputs: [login_results, login_latency]
+
+  - name: test-checkout-journey
+    action: monitoring.synthetic_test
+    needs: [define-journeys]
+    params:
+      journey: "checkout_flow"
+      steps: ["browse", "add_to_cart", "review_cart", "enter_shipping", "enter_payment", "confirm"]
+      browser: "chrome"
+    outputs: [checkout_results, checkout_latency]
+
+  - name: test-search-journey
+    action: monitoring.synthetic_test
+    needs: [define-journeys]
+    params:
+      journey: "product_search"
+      steps: ["navigate", "enter_query", "filter_results", "view_details"]
+      browser: "chrome"
+    outputs: [search_results, search_latency]
+
+  - name: test-api-journey
+    action: monitoring.api_test
+    needs: [define-journeys]
+    params:
+      endpoints: ["/api/users", "/api/products", "/api/orders"]
+      method: "GET"
+    outputs: [api_results, api_latency]
+
+  - name: aggregate-results
+    action: monitoring.aggregate_test_results
+    needs: [test-login-journey, test-checkout-journey, test-search-journey, test-api-journey]
+    outputs: [test_summary, pass_rate]
+
+  - name: compare-baseline
+    action: monitoring.compare_baseline
+    needs: [aggregate-results]
+    params:
+      baseline: "last_week"
+    outputs: [deviations, improvement_decline]
+
+  - name: generate-report
+    action: reporter.generate_synthetic_report
+    needs: [aggregate-results, compare-baseline]
+    outputs: [synthetic_report]
+
+  - name: alert-on-failure
+    action: notification.alert
+    needs: [aggregate-results]
+    params:
+      severity: warning
+      condition: "outputs.aggregate-results.pass_rate < 0.95"
+      message: "Synthetic test pass rate below threshold"

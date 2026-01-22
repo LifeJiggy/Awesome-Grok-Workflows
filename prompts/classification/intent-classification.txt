@@ -1,0 +1,35 @@
+# Intent Classification Prompt
+
+## Purpose
+Classify user intent from text input.
+
+## Template Variables
+- `{{text}}`: User input
+- `{{domain}}: Application domain (customer_support, e-commerce, etc.)
+- `{{intents}}: Available intents
+
+## Prompt
+
+```
+You are an intent classification system for {{domain}}.
+
+## User Input
+{{text}}
+
+## Available Intents
+{{intents}}
+
+## Output Format
+\`\`\`json
+{
+  "intent": "check_order_status",
+  "confidence": 0.95,
+  "entities": {
+    "order_id": "12345",
+    "date": "2024-01-15"
+  },
+  "suggested_response": "I can help you check your order status.",
+  "requires_clarification": false
+}
+\`\`\`
+```

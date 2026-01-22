@@ -1,0 +1,74 @@
+name: Database Migration Pipeline
+version: 1.0.0
+description: Safe database schema migration with rollback capability
+author: Grok Workflow System
+created_at: 2024-01-22T00:00:00Z
+
+triggers:
+  - on_pull_request
+  - on_manual
+
+guards:
+  - require_backup_before_migration
+  - require DBA approval for production
+
+steps:
+  - name: review-migrations
+    action: db.review_pending_migrations
+    outputs: [pending_migrations, migration_files]
+
+  - name: validate-migrations
+    action: db.validate_migrations
+    needs: [review-migrations]
+    params:
+      migration_files: "{{outputs.review-migrations.migration_files}}"
+    outputs: [validation_result, syntax_errors]
+
+  - name: create-backup
+    action: db.create_backup
+    needs: [validate-migrations]
+    params:
+      type: full
+      destination: "backup_bucket"
+    outputs: [backup_id, backup_status]
+
+  - name: dry-run-migrations
+    action: db.dry_run
+    needs: [create-backup]
+    params:
+      migrations: "{{outputs.validate-migrations.valid_migrations}}"
+    outputs: [dry_run_result, affected_rows]
+
+  - name: deploy-migrations
+    action: db.deploy_migrations
+    needs: [dry-run-migrations]
+    params:
+      migrations: "{{outputs.dry-run-migrations.valid_migrations}}"
+      batch_size: 1
+    outputs: [migration_results, applied_migrations]
+
+  - name: verify-migrations
+    action: db.verify_migrations
+    needs: [deploy-migrations]
+    params:
+      expected_migrations: "{{outputs.deploy-migrations.applied_migrations}}"
+    outputs: [verification_result]
+
+  - name: run-data-migrations
+    action: db.run_data_migrations
+    needs: [verify-migrations]
+    params:
+      scripts: ["data_cleanup.sql", "backfill_new_fields.sql"]
+    outputs: [data_migration_results]
+
+  - name: update-version
+    action: db.update_version
+    needs: [run-data-migrations]
+    outputs: [new_schema_version]
+
+  - name: notify-success
+    action: notification.send
+    needs: [update-version]
+    params:
+      message: "Database migration successful"
+      channel: "#database-alerts"
